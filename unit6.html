@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Unit 6 — ANN, Deep Learning & Recommender Systems | RTU</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap');
+:root{
+  --bg:#07090d;--bg2:#0b0e14;--surface:#0f1420;--surface2:#161d2c;
+  --border:#1c2638;--border2:#131c28;
+  --acc:#a78bfa;--acc2:#22d3ee;--acc3:#f43f5e;--acc4:#34d399;--gold:#fbbf24;
+  --text:#dde4f0;--dim:#5a6a85;--dim2:#8899b0;
+  --mono:'IBM Plex Mono',monospace;--head:'Syne',sans-serif;--body:'Source Serif 4',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.75;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.topnav{position:sticky;top:0;z-index:200;background:rgba(7,9,13,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);padding:0 20px;display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.tnlabel{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);padding:13px 12px 13px 0;border-right:1px solid var(--border);margin-right:6px;white-space:nowrap;flex-shrink:0}
+.tnlink{font-family:var(--mono);font-size:11px;padding:7px 13px;border-radius:5px;text-decoration:none;color:var(--dim2);white-space:nowrap;flex-shrink:0;transition:all .18s;border:1px solid transparent}
+.tnlink:hover{color:var(--text);background:var(--surface2)}
+.tnlink.active{color:var(--acc);background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.28)}
+.hero{position:relative;overflow:hidden;padding:64px 36px 56px;background:var(--bg)}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(167,139,250,0.06) 1px,transparent 1px);background-size:38px 38px;animation:dp 22s linear infinite}
+@keyframes dp{0%{transform:translate(0,0)}100%{transform:translate(38px,38px)}}
+.hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 65% 50% at 50% -5%,rgba(167,139,250,0.14) 0%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);animation:fup .6s ease both}
+.edot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+@keyframes fup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.hero-title{font-family:var(--head);font-weight:800;font-size:clamp(32px,6vw,68px);line-height:1.0;color:#fff;letter-spacing:-1px;animation:fup .6s .1s ease both}
+.hero-title .grad{background:linear-gradient(135deg,#fff 30%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-sub{font-size:16px;color:var(--dim2);max-width:580px;animation:fup .6s .2s ease both}
+.hero-sub strong{color:var(--text);font-weight:600}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap;animation:fup .6s .35s ease both}
+.hb{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid}
+.hb-v{color:var(--acc);border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.08)}
+.hb-c{color:var(--acc2);border-color:rgba(34,211,238,.3);background:rgba(34,211,238,.08)}
+.hb-r{color:var(--acc3);border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.08)}
+.hb-g{color:var(--acc4);border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
+.layout{display:flex;max-width:1280px;margin:0 auto}
+.sidebar{width:260px;min-width:260px;padding:24px 14px;border-right:1px solid var(--border);position:sticky;top:44px;height:calc(100vh - 44px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transition:transform .3s}
+.sb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sb-title{font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--acc)}
+.sb-close{display:none;background:none;border:1px solid var(--border);border-radius:4px;color:var(--dim2);cursor:pointer;padding:2px 8px;font-family:var(--mono);font-size:11px}
+.navitem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-family:var(--head);font-size:13px;font-weight:600;color:var(--dim2);text-decoration:none;margin-bottom:2px;transition:all .2s;border-left:2px solid transparent}
+.navitem:hover,.navitem.active{background:var(--surface2);color:var(--text)}
+.navitem.active{color:var(--acc);border-left-color:var(--acc)}
+.nimp{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;background:var(--surface2)}
+.nimp.h{color:var(--acc3)}.nimp.m{color:var(--gold)}.nimp.l{color:var(--acc4)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:98;backdrop-filter:blur(2px)}
+.overlay.vis{display:block}
+.fab{display:none;position:fixed;bottom:20px;right:20px;z-index:1000;width:50px;height:50px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;font-size:20px;color:#000;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(167,139,250,.4);transition:transform .2s}
+.fab:hover{transform:scale(1.1)}
+.content{flex:1;padding:32px 36px;max-width:calc(100% - 260px);overflow-x:hidden}
+.section{margin-bottom:60px;scroll-margin-top:60px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--acc);background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);padding:4px 8px;border-radius:4px;min-width:36px;text-align:center}
+.sec-title{font-family:var(--head);font-size:clamp(18px,3vw,22px);font-weight:800;color:#fff}
+.ipill{margin-left:auto;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px}
+.theory{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:18px}
+.theory h3{font-family:var(--head);font-size:16px;font-weight:700;color:var(--acc);margin-bottom:12px}
+.theory p{margin-bottom:10px}.theory p:last-child{margin-bottom:0}
+.theory ul,.theory ol{padding-left:20px;margin:10px 0}
+.theory li{margin-bottom:6px;font-size:15px}
+h4{font-family:var(--head);font-size:15px;font-weight:700;color:var(--text);margin:16px 0 8px}
+.fbox{background:#060911;border:1px solid rgba(167,139,250,.25);border-left:3px solid var(--acc);border-radius:8px;padding:16px 20px;margin:14px 0;font-family:var(--mono);font-size:13px;overflow-x:auto}
+.fbox .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:block}
+.fbox .f{color:#d8b4fe;margin:4px 0}
+.fbox .n{color:var(--dim2);font-size:12px;margin-top:8px}
+.tip{border-radius:8px;padding:15px 18px;margin:14px 0;display:flex;gap:12px}
+.tip.trick{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25)}
+.tip.note{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25)}
+.tip.link{background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.25)}
+.tip.warn{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25)}
+.ti{font-size:20px;flex-shrink:0;margin-top:2px}
+.tb{flex:1}
+.ttl{font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.tip.trick .ttl{color:var(--gold)}.tip.note .ttl{color:var(--acc4)}.tip.link .ttl{color:var(--acc2)}.tip.warn .ttl{color:var(--acc3)}
+.tb p{font-size:14px;color:var(--text);margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;display:block;overflow-x:auto}
+.tbl th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:var(--head);font-weight:700;color:var(--acc);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+.steps{margin:14px 0}
+.step{display:flex;gap:14px;margin-bottom:12px}
+.sn{width:28px;height:28px;min-width:28px;border-radius:50%;background:var(--acc);color:#000;font-family:var(--mono);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st{font-size:15px;padding-top:4px}
+.ex{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin:14px 0}
+.ex-lbl{font-family:var(--mono);font-size:10px;color:var(--acc3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:13px;color:var(--acc4);margin:12px 0;line-height:1.6}
+.pyq-sec{background:#060810;border:1px solid rgba(167,139,250,.22);border-radius:10px;padding:20px 24px;margin-top:24px}
+.pyq-head{font-family:var(--head);font-size:14px;font-weight:700;color:var(--acc);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.pyq-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
+.pyq-q{font-family:var(--head);font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.pyq-meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:8px}
+.pyq-topic{font-family:var(--mono);font-size:10px;color:var(--acc);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:10px}
+.ptog{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 14px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--acc);margin-top:8px;transition:all .2s}
+.ptog:hover{background:var(--acc);color:#000}
+.ans{display:none;margin-top:14px;font-size:14px;line-height:1.8}
+.ans.open{display:block}
+.ibar-wrap{margin-bottom:8px}
+.ibar-lbl{font-family:var(--mono);font-size:12px;color:var(--dim2);margin-bottom:4px;display:flex;justify-content:space-between}
+.ibar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.ibar-fill{height:100%;border-radius:3px}
+.ih .ibar-fill{background:var(--acc3)}.im .ibar-fill{background:var(--gold)}.il .ibar-fill{background:var(--acc4)}
+.diag{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;text-align:center;overflow-x:auto}
+.diag-cap{font-family:var(--mono);font-size:11px;color:var(--dim2);margin-top:10px}
+.hl{color:var(--acc);font-weight:600}.hl-c{color:var(--acc2)}.hl-g{color:var(--acc4)}.hl-r{color:var(--acc3)}
+.divider{border:none;border-top:1px solid var(--border);margin:30px 0}
+@media(max-width:768px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:99;background:var(--bg);transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.8)}
+  .sb-close{display:block}.fab{display:flex}
+  .content{max-width:100%;padding:20px 16px}.hero{padding:48px 20px 44px}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:8px}.ipill{margin-left:0}
+}
+@media(min-width:769px){.fab{display:none!important}.overlay{display:none!important}}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <span class="tnlabel">ML · RTU</span>
+  <a class="tnlink" href="index.html">🏠 Home</a>
+  <a class="tnlink" href="unit2.html">🎯 Unit 2: Supervised</a>
+  <a class="tnlink" href="unit3.html">🔵 Unit 3: Unsupervised</a>
+  <a class="tnlink" href="unit4.html">📐 Unit 4: Statistical</a>
+  <a class="tnlink" href="unit5.html">🤖 Unit 5: RL</a>
+  <a class="tnlink active" href="unit6.html">📡 Unit 6: Neural Nets</a>
+  <a class="tnlink pyq" href="pyq.html">📋 Solved PYQs</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="edot"></span>ML · Unit 6 · 6E7102 / 6AI4-02</div>
+    <h1 class="hero-title">Neural Networks<br><span class="grad">&amp; Deep Learning</span></h1>
+    <p class="hero-sub">ANN, Perceptron, Backpropagation, Deep Learning, Recommender Systems, Collaborative &amp; Content-Based Filtering — <strong>with full RTU PYQs solved</strong>.</p>
+    <div class="hero-badges">
+      <span class="hb hb-v">🧠 ANN from Scratch</span>
+      <span class="hb hb-r">🔥 Backprop Numericals</span>
+      <span class="hb hb-c">🎬 Recommender Systems</span>
+      <span class="hb hb-g">✅ All PYQs 2022–2025</span>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+<div class="layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sb-head"><span class="sb-title">Topics</span><button class="sb-close" onclick="closeSB()">✕</button></div>
+  <a class="navitem active" href="#overview" onclick="closeSB()">📊 Importance</a>
+  <a class="navitem" href="#recsys" onclick="closeSB()">🎬 Recommender Systems<span class="nimp m">80%</span></a>
+  <a class="navitem" href="#collab" onclick="closeSB()">👥 Collaborative Filtering<span class="nimp h">85%</span></a>
+  <a class="navitem" href="#content" onclick="closeSB()">📄 Content-Based Filtering<span class="nimp m">75%</span></a>
+  <a class="navitem" href="#ann" onclick="closeSB()">🧠 Artificial Neural Networks<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#perceptron" onclick="closeSB()">⚡ Perceptron<span class="nimp h">88%</span></a>
+  <a class="navitem" href="#multilayer" onclick="closeSB()">🔗 Multilayer Networks<span class="nimp h">88%</span></a>
+  <a class="navitem" href="#backprop" onclick="closeSB()">🔄 Backpropagation<span class="nimp h">92%</span></a>
+  <a class="navitem" href="#deeplearning" onclick="closeSB()">🚀 Deep Learning<span class="nimp h">88%</span></a>
+  <a class="navitem" href="#pyqs" onclick="closeSB()">📝 All PYQs</a>
+</nav>
+
+<main class="content">
+
+<!-- OVERVIEW -->
+<section class="section" id="overview">
+  <div class="sec-head"><span class="sec-num">00</span><h2 class="sec-title">Topic Importance Analysis</h2></div>
+  <div class="theory">
+    <p>Unit 6 covers neural networks and recommender systems. ANN + Backpropagation appears in EVERY paper. The short notes question (Perceptrons, Multilayer, Backprop, ANN) appeared in 2025 Part C worth 10 marks.</p>
+    <div class="ibar-wrap ih" style="margin-top:16px"><div class="ibar-lbl"><span>Backpropagation Algorithm</span><span style="color:var(--acc3)">92%</span></div><div class="ibar"><div class="ibar-fill" style="width:92%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>ANN — Structure + Working</span><span style="color:var(--acc3)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Perceptron Training (numerical)</span><span style="color:var(--acc3)">88%</span></div><div class="ibar"><div class="ibar-fill" style="width:88%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Multilayer Neural Network</span><span style="color:var(--acc3)">88%</span></div><div class="ibar"><div class="ibar-fill" style="width:88%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Deep Learning Concept</span><span style="color:var(--acc3)">88%</span></div><div class="ibar"><div class="ibar-fill" style="width:88%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Collaborative Filtering</span><span style="color:var(--gold)">85%</span></div><div class="ibar"><div class="ibar-fill" style="width:85%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Recommender Systems (general)</span><span style="color:var(--gold)">80%</span></div><div class="ibar"><div class="ibar-fill" style="width:80%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Content-Based Filtering</span><span style="color:var(--gold)">75%</span></div><div class="ibar"><div class="ibar-fill" style="width:75%"></div></div></div>
+  </div>
+  <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Exam Strategy</div><p>The 2025 Part C Q1 asked for short notes on (a) Perceptions (b) Multilayer Network (c) Back Propagation (d) Artificial Neural Network — that's 10 marks from Unit 6 topics as a GROUP. Prepare 2-page answers for each topic. The 2024 Part C Q2 asked for Multilayer NN + Backpropagation together. Always draw the network diagram — it earns 3–4 marks standalone.</p></div></div>
+</section>
+
+<!-- RECOMMENDER SYSTEMS -->
+<section class="section" id="recsys">
+  <div class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Recommender Systems</h2><span class="ipill hb hb-c">80% · Part A/B</span></div>
+  <div class="theory">
+    <h3>What is a Recommender System?</h3>
+    <p>A <span class="hl">recommender system</span> is a type of information filtering system that predicts and suggests items a user might like, based on their past behaviour, preferences, or characteristics of items.</p>
+    <p><strong>Real-world examples:</strong> Netflix suggesting movies, Amazon recommending products, Spotify creating playlists, YouTube auto-play, Google News personalization.</p>
+    <p><strong>The core problem:</strong> Users haven't seen all items. The system must predict rating/preference for unseen items and recommend the highest predicted ones.</p>
+  </div>
+  <div class="theory">
+    <h3>Types of Recommender Systems</h3>
+    <table class="tbl">
+      <tr><th>Type</th><th>Input Data</th><th>Approach</th><th>Example</th></tr>
+      <tr><td><span class="hl">Collaborative Filtering</span></td><td>User-item interaction matrix (ratings)</td><td>"Users like you also liked..."</td><td>Netflix, Amazon</td></tr>
+      <tr><td><span class="hl">Content-Based Filtering</span></td><td>Item features + user profile</td><td>"You liked X, here's similar..."</td><td>Spotify, news apps</td></tr>
+      <tr><td><span class="hl">Hybrid</span></td><td>Both</td><td>Combines both approaches</td><td>Netflix (uses both)</td></tr>
+      <tr><td><span class="hl">Knowledge-Based</span></td><td>Domain knowledge + user requirements</td><td>Rule-based matching</td><td>Financial advisors</td></tr>
+    </table>
+    <h4>Similarity Measures Used in Recommender Systems (2023 Part A Q10)</h4>
+    <div class="fbox">
+      <span class="lbl">Cosine Similarity (Most Common)</span>
+      <div class="f">cos(u,v) = (u · v) / (||u|| × ||v||) = Σuᵢvᵢ / √(Σuᵢ²) × √(Σvᵢ²)</div>
+      <div class="n">Range: [-1,1]. 1 = identical, 0 = orthogonal, -1 = opposite</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Pearson Correlation</span>
+      <div class="f">r(u,v) = Σ(rᵤᵢ - r̄ᵤ)(rᵥᵢ - r̄ᵥ) / √[Σ(rᵤᵢ - r̄ᵤ)² × Σ(rᵥᵢ - r̄ᵥ)²]</div>
+      <div class="n">Accounts for different rating scales (user bias). Better for explicit ratings.</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Recommender Systems</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Name and define techniques used to find similarities in the recommendation system.</div>
+      <div class="pyq-meta">Aug 2023 · Part A Q10 · 2 marks</div>
+      <div class="pyq-topic">Topic: Recommender Systems · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Techniques for finding similarity in recommender systems:</strong><br><br>
+        <strong>1. Cosine Similarity:</strong> Measures the cosine of the angle between two user/item vectors. cos(u,v) = (u·v)/(||u||×||v||). Range [0,1]. Ignores magnitude — focuses on direction (preferences pattern).<br><br>
+        <strong>2. Pearson Correlation:</strong> Measures linear correlation between ratings, accounting for user's average rating bias. Range [-1,1]. More robust than cosine for explicit rating data.<br><br>
+        <strong>3. Euclidean Distance:</strong> d(u,v) = √Σ(uᵢ-vᵢ)². Smaller distance = more similar. Simple but sensitive to scale.<br><br>
+        <strong>4. Jaccard Similarity:</strong> For binary data (liked/not-liked). |A∩B|/|A∪B|. Used in implicit feedback systems.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. You are provided with data from a music streaming platform — 450,000 records of songs users listened to. How would you build a music recommendation system? List the steps.</div>
+      <div class="pyq-meta">June 2022 · Part A Q10 · 2 marks</div>
+      <div class="pyq-topic">Topic: Recommender Systems · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Steps to build a music recommendation system:</strong><br><br>
+        Step 1: <strong>Data Collection:</strong> Collect user-song interaction data (play counts, likes, skips, ratings).<br>
+        Step 2: <strong>Data Preprocessing:</strong> Handle missing values. Create user-song matrix (rows=users, cols=songs, values=play count or rating).<br>
+        Step 3: <strong>Choose Approach:</strong><br>
+        — Collaborative Filtering: Find users with similar listening patterns → recommend what they liked.<br>
+        — Content-Based: Extract song features (genre, artist, tempo, mood) → recommend similar songs.<br>
+        Step 4: <strong>Similarity Computation:</strong> Compute user-user or item-item similarity using cosine similarity or Pearson correlation.<br>
+        Step 5: <strong>Prediction:</strong> Predict ratings for unseen songs. Recommend top-N songs with highest predicted rating.<br>
+        Step 6: <strong>Evaluation:</strong> Use metrics like RMSE (rating prediction), Precision@k, Recall@k, NDCG.<br>
+        Step 7: <strong>Deploy + Feedback:</strong> Continuously update model with new user interactions.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COLLABORATIVE FILTERING -->
+<section class="section" id="collab">
+  <div class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">Collaborative Filtering</h2><span class="ipill hb hb-r">85% · Part B</span></div>
+  <div class="theory">
+    <h3>Core Idea</h3>
+    <p><span class="hl">Collaborative Filtering (CF)</span> recommends items based on the collective behaviour of many users. It assumes users with similar past behaviour will like similar things in the future — "wisdom of the crowd."</p>
+    <p><strong>It doesn't need item content information</strong> — only needs past user-item interactions (ratings, clicks, purchases).</p>
+    <h4>Two Types of CF</h4>
+    <table class="tbl">
+      <tr><th>Type</th><th>How it works</th><th>Steps</th><th>Best for</th></tr>
+      <tr><td><span class="hl">User-based CF</span></td><td>Find users similar to active user → Recommend what similar users liked</td><td>1. Build user-item matrix. 2. Compute user-user similarity. 3. Find k-nearest similar users. 4. Predict ratings. 5. Recommend top items.</td><td>Small user base, changing items</td></tr>
+      <tr><td><span class="hl">Item-based CF</span></td><td>Find items similar to what user already liked → Recommend similar items</td><td>1. Build item-item similarity matrix. 2. For each item user rated, find similar items. 3. Predict rating for unseen items. 4. Recommend top items.</td><td>Large user base, stable items</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>Rating Prediction Formula</h3>
+    <div class="fbox">
+      <span class="lbl">User-based CF Prediction</span>
+      <div class="f">r̂(u,i) = r̄ᵤ + Σₙ sim(u,n)×(r(n,i) - r̄ₙ) / Σₙ |sim(u,n)|</div>
+      <div class="n">r̂(u,i) = predicted rating of user u for item i</div>
+      <div class="n">r̄ᵤ = mean rating of user u (accounts for user bias)</div>
+      <div class="n">sim(u,n) = similarity between users u and n</div>
+      <div class="n">Sum over N most similar users who rated item i</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Advantages & Disadvantages</h3>
+    <table class="tbl">
+      <tr><th>Advantages</th><th>Disadvantages</th></tr>
+      <tr><td>No need to understand item content</td><td>Cold start problem — can't recommend to new users/items</td></tr>
+      <tr><td>Can discover serendipitous recommendations</td><td>Scalability — computing similarity for millions of users is expensive</td></tr>
+      <tr><td>Domain independent (works for any item type)</td><td>Sparsity — most users rate very few items</td></tr>
+      <tr><td>Improves with more users</td><td>Popularity bias — popular items always recommended</td></tr>
+    </table>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Collaborative Filtering</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What are Recommender Systems? What is Collaborative filtering and Content Based filtering?</div>
+      <div class="pyq-meta">Aug 2023 · Part B Q2 · 4+4 marks</div>
+      <div class="pyq-topic">Topic: Collaborative & Content-Based Filtering · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Recommender Systems:</strong><br>
+        Systems that filter information to predict user preferences and suggest relevant items. Used in e-commerce (Amazon), streaming (Netflix, Spotify), and social media.<br><br>
+        <strong>Collaborative Filtering:</strong><br>
+        Recommends items based on the preferences of similar users (or based on item similarity). Does NOT need item content — relies purely on user-item interaction data.<br><br>
+        Two approaches:<br>
+        1. <em>User-based:</em> "Users like you also liked..." — find users with similar ratings history, recommend what they liked.<br>
+        2. <em>Item-based:</em> "You liked X, others who liked X also liked Y..." — find items similar to user's liked items.<br><br>
+        <em>Example:</em> You and User B both rated Movie A=5, Movie B=4. User B also rated Movie C=5. CF recommends Movie C to you.<br><br>
+        Limitations: Cold start (new users/items), sparsity, scalability.<br><br>
+        <strong>Content-Based Filtering:</strong><br>
+        Recommends items similar to what a user has liked before, based on the FEATURES/CONTENT of items. Builds a user profile from features of liked items.<br><br>
+        Steps: 1. Extract item features (genre, director, keywords). 2. Build user profile (weighted average of features of liked items). 3. Match user profile against all items using cosine similarity. 4. Recommend items with highest similarity score.<br><br>
+        <em>Example:</em> You liked "Action movies with Tom Cruise" → system recommends other Action movies with Tom Cruise (based on item features).<br><br>
+        Limitations: Over-specialisation (can't recommend new types), requires good feature extraction, can't find serendipitous items.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Give advantages of content-based filtering.</div>
+      <div class="pyq-meta">2024 · Part A Q3 · 2 marks</div>
+      <div class="pyq-topic">Topic: Content-Based Filtering · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Advantages of Content-Based Filtering:</strong><br>
+        1. <strong>No cold-start for items:</strong> Can recommend new items immediately as long as their features are known — doesn't need rating history for items.<br>
+        2. <strong>No sparsity problem:</strong> Doesn't depend on other users' ratings — works even with few users.<br>
+        3. <strong>Transparent:</strong> Can explain recommendations — "We recommended this because you liked X which has similar genre/features."<br>
+        4. <strong>User independence:</strong> Recommendations are personalised to the individual — not influenced by what other users do.<br>
+        5. <strong>Niche items:</strong> Can recommend unpopular but relevant items that CF might miss.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTENT-BASED -->
+<section class="section" id="content">
+  <div class="sec-head"><span class="sec-num">03</span><h2 class="sec-title">Content-Based Filtering</h2><span class="ipill hb hb-v">75% · Part A/B</span></div>
+  <div class="theory">
+    <h3>How Content-Based Filtering Works</h3>
+    <p><span class="hl">Content-Based Filtering</span> recommends items by comparing the FEATURES of items with a user's preference profile. It answers: "Given what you've liked before (in terms of content characteristics), what else would you like?"</p>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Feature Extraction:</strong> Represent each item as a feature vector. For movies: [genre, director, cast, year, keywords]. For news: TF-IDF of article text.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>User Profile Construction:</strong> Create a user profile = weighted average of feature vectors of items the user has rated. Higher-rated items contribute more.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Similarity Matching:</strong> For each unseen item, compute similarity between item's feature vector and user's profile vector (cosine similarity).</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Recommendation:</strong> Rank items by similarity score. Recommend top-N items.</div></div>
+    </div>
+    <h4>Collaborative vs Content-Based — Comparison Table</h4>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Collaborative Filtering</th><th>Content-Based Filtering</th></tr>
+      <tr><td>Data needed</td><td>User-item interactions (ratings)</td><td>Item features + user profile</td></tr>
+      <tr><td>Cold start - new users</td><td>Cannot recommend</td><td>Cannot recommend (no history)</td></tr>
+      <tr><td>Cold start - new items</td><td>Cannot recommend</td><td>Can recommend (if features known)</td></tr>
+      <tr><td>Serendipity</td><td>High (finds unexpected items)</td><td>Low (stays in comfort zone)</td></tr>
+      <tr><td>Transparency</td><td>Low (why? unclear)</td><td>High (feature-based explanation)</td></tr>
+      <tr><td>Works alone</td><td>Needs many users</td><td>Works for one user</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ANN -->
+<section class="section" id="ann">
+  <div class="sec-head"><span class="sec-num">04</span><h2 class="sec-title">Artificial Neural Networks (ANN)</h2><span class="ipill hb hb-r">🔥 90% · Part B/C</span></div>
+  <div class="theory">
+    <h3>Biological Inspiration</h3>
+    <p>The human brain has ~86 billion neurons, each connected to ~10,000 others via synapses. <span class="hl">Artificial Neural Networks</span> are computational models loosely inspired by this structure. They learn by adjusting connection weights based on examples — just as biological synapses strengthen with repeated activation.</p>
+    <p><strong>Biological vs Artificial neuron:</strong></p>
+    <table class="tbl">
+      <tr><th>Biological Neuron</th><th>Artificial Neuron</th></tr>
+      <tr><td>Dendrites (receive signals)</td><td>Inputs (x₁, x₂, ..., xₙ)</td></tr>
+      <tr><td>Synapse strength</td><td>Weights (w₁, w₂, ..., wₙ)</td></tr>
+      <tr><td>Cell body (sum + threshold)</td><td>Summation + Activation function</td></tr>
+      <tr><td>Axon (output signal)</td><td>Output y</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>Mathematical Model of a Single Neuron</h3>
+    <div class="fbox">
+      <span class="lbl">Single Neuron Computation</span>
+      <div class="f">Net Input:   h = w₀ + w₁x₁ + w₂x₂ + ... + wₙxₙ = bias + Σ wᵢxᵢ</div>
+      <div class="f">Output:      y = f(h) = activation_function(h)</div>
+      <div class="n">w₀ = bias weight (threshold), wᵢ = input weights, xᵢ = inputs</div>
+    </div>
+    <h4>Common Activation Functions (Must Know)</h4>
+    <table class="tbl">
+      <tr><th>Function</th><th>Formula</th><th>Range</th><th>Use</th></tr>
+      <tr><td><span class="hl">Step (Threshold)</span></td><td>f(h) = 1 if h&gt;0, else 0</td><td>{0,1}</td><td>Perceptron</td></tr>
+      <tr><td><span class="hl">Sigmoid</span></td><td>f(h) = 1/(1+e⁻ʰ)</td><td>(0,1)</td><td>Binary classification output</td></tr>
+      <tr><td><span class="hl">Tanh</span></td><td>f(h) = (eʰ-e⁻ʰ)/(eʰ+e⁻ʰ)</td><td>(-1,1)</td><td>Hidden layers</td></tr>
+      <tr><td><span class="hl">ReLU</span></td><td>f(h) = max(0,h)</td><td>[0,∞)</td><td>Deep learning hidden layers</td></tr>
+      <tr><td><span class="hl">Softmax</span></td><td>f(hᵢ) = eʰⁱ / Σeʰʲ</td><td>(0,1), Σ=1</td><td>Multi-class output</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>ANN Structure — Describe in Exams</h3>
+    <div class="diag">
+      <svg viewBox="0 0 580 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="18" fill="#a78bfa" font-family="Syne" font-size="12" font-weight="700">3-Layer Feedforward ANN</text>
+        <!-- Input layer -->
+        <text x="70" y="35" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">INPUT LAYER</text>
+        <circle cx="70" cy="70" r="18" fill="#0f1420" stroke="#a78bfa" stroke-width="2"/>
+        <text x="70" y="75" text-anchor="middle" fill="#a78bfa" font-family="IBM Plex Mono" font-size="10">x₁</text>
+        <circle cx="70" cy="115" r="18" fill="#0f1420" stroke="#a78bfa" stroke-width="2"/>
+        <text x="70" y="120" text-anchor="middle" fill="#a78bfa" font-family="IBM Plex Mono" font-size="10">x₂</text>
+        <circle cx="70" cy="160" r="18" fill="#0f1420" stroke="#a78bfa" stroke-width="2"/>
+        <text x="70" y="165" text-anchor="middle" fill="#a78bfa" font-family="IBM Plex Mono" font-size="10">x₃</text>
+        <!-- Hidden layer -->
+        <text x="260" y="35" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">HIDDEN LAYER</text>
+        <circle cx="260" cy="55" r="18" fill="#0f1420" stroke="#22d3ee" stroke-width="2"/>
+        <text x="260" y="60" text-anchor="middle" fill="#22d3ee" font-family="IBM Plex Mono" font-size="9">h₁</text>
+        <circle cx="260" cy="100" r="18" fill="#0f1420" stroke="#22d3ee" stroke-width="2"/>
+        <text x="260" y="105" text-anchor="middle" fill="#22d3ee" font-family="IBM Plex Mono" font-size="9">h₂</text>
+        <circle cx="260" cy="145" r="18" fill="#0f1420" stroke="#22d3ee" stroke-width="2"/>
+        <text x="260" y="150" text-anchor="middle" fill="#22d3ee" font-family="IBM Plex Mono" font-size="9">h₃</text>
+        <circle cx="260" cy="190" r="18" fill="#0f1420" stroke="#22d3ee" stroke-width="2"/>
+        <text x="260" y="195" text-anchor="middle" fill="#22d3ee" font-family="IBM Plex Mono" font-size="9">h₄</text>
+        <!-- Output layer -->
+        <text x="450" y="35" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">OUTPUT LAYER</text>
+        <circle cx="450" cy="90" r="18" fill="#0f1420" stroke="#34d399" stroke-width="2"/>
+        <text x="450" y="95" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">y₁</text>
+        <circle cx="450" cy="135" r="18" fill="#0f1420" stroke="#34d399" stroke-width="2"/>
+        <text x="450" y="140" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">y₂</text>
+        <!-- Connections input→hidden -->
+        <line x1="88" y1="70" x2="242" y2="55" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="70" x2="242" y2="100" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="70" x2="242" y2="145" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="70" x2="242" y2="190" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="115" x2="242" y2="55" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="115" x2="242" y2="100" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="115" x2="242" y2="145" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="115" x2="242" y2="190" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="160" x2="242" y2="55" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="160" x2="242" y2="100" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="160" x2="242" y2="145" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <line x1="88" y1="160" x2="242" y2="190" stroke="#a78bfa" stroke-width="0.8" opacity="0.5"/>
+        <!-- hidden→output -->
+        <line x1="278" y1="55" x2="432" y2="90" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="55" x2="432" y2="135" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="100" x2="432" y2="90" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="100" x2="432" y2="135" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="145" x2="432" y2="90" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="145" x2="432" y2="135" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="190" x2="432" y2="90" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <line x1="278" y1="190" x2="432" y2="135" stroke="#22d3ee" stroke-width="0.8" opacity="0.5"/>
+        <!-- Labels -->
+        <text x="510" y="95" fill="#34d399" font-family="IBM Plex Mono" font-size="10">ŷ₁</text>
+        <text x="510" y="140" fill="#34d399" font-family="IBM Plex Mono" font-size="10">ŷ₂</text>
+        <text x="155" y="185" fill="#a78bfa" font-family="IBM Plex Mono" font-size="9">Weights W¹ (3×4)</text>
+        <text x="340" y="185" fill="#22d3ee" font-family="IBM Plex Mono" font-size="9">Weights W² (4×2)</text>
+      </svg>
+      <div class="diag-cap">Fig 4.1 — 3-layer ANN: 3 inputs → 4 hidden → 2 outputs. Weights on each connection are learned.</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — ANN</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Describe the structure of Artificial Neural Networks.</div>
+      <div class="pyq-meta">Aug 2023 · Part A Q9 · 2 marks</div>
+      <div class="pyq-topic">Topic: ANN Structure · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        An ANN consists of interconnected layers of artificial neurons (nodes):<br><br>
+        <strong>1. Input Layer:</strong> Receives raw input features x₁, x₂, ..., xₙ. No computation — just distributes inputs to next layer.<br><br>
+        <strong>2. Hidden Layer(s):</strong> One or more intermediate layers. Each neuron computes: h = f(Σwᵢxᵢ + bias). The function f is a non-linear activation function (sigmoid, tanh, ReLU).<br><br>
+        <strong>3. Output Layer:</strong> Produces final predictions ŷ. Number of neurons = number of output classes (for classification) or 1 (for regression).<br><br>
+        <strong>Connections:</strong> Fully connected between layers. Each connection has a learnable weight w. Learning = adjusting these weights via backpropagation to minimize loss.<br><br>
+        [Draw the 3-layer diagram shown in the theory section — earns 3-4 marks]
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Briefly describe an application of Artificial Neural Network that is used for learning to steer an autonomous vehicle.</div>
+      <div class="pyq-meta">June 2022 · Part A Q9 · 2 marks</div>
+      <div class="pyq-topic">Topic: ANN Applications · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>ANN for Autonomous Vehicle Steering (DAVE-2 / NVIDIA):</strong><br><br>
+        <strong>Input:</strong> Raw camera image from front-facing camera (converted to pixel values).<br>
+        <strong>ANN Architecture:</strong> Convolutional layers extract road features (lane lines, curves, obstacles). Fully connected layers map features to steering decisions.<br>
+        <strong>Output:</strong> Steering angle (a continuous value — regression) to turn the wheel left/right by that amount.<br><br>
+        <strong>Learning process:</strong> The ANN is trained using supervised learning on millions of miles of human driving data. For each camera frame, it learns to output the same steering angle a human driver applied. After training, it generalises to new roads.<br><br>
+        <strong>Key advantage:</strong> The ANN learns features automatically from raw pixels — no explicit programming of road detection rules needed. This was demonstrated by NVIDIA's DAVE system that learned to steer on highways.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PERCEPTRON -->
+<section class="section" id="perceptron">
+  <div class="sec-head"><span class="sec-num">05</span><h2 class="sec-title">Perceptron</h2><span class="ipill hb hb-r">88% · Numerical</span></div>
+  <div class="theory">
+    <h3>What is a Perceptron?</h3>
+    <p>The <span class="hl">Perceptron</span> is the simplest form of ANN — a single layer of neurons that can learn to classify linearly separable data. Invented by Frank Rosenblatt in 1957.</p>
+    <p><strong>Single-layer perceptron</strong> can only solve linearly separable problems (AND, OR gates — but NOT XOR). For XOR, you need a multilayer perceptron.</p>
+    <div class="fbox">
+      <span class="lbl">Perceptron Computation</span>
+      <div class="f">Net input:  h = w₀·(bias) + w₁x₁ + w₂x₂ + ... + wₙxₙ</div>
+      <div class="f">Output:     y = 1 if h &gt; 0, else 0   (threshold activation)</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Perceptron Learning Rule</h3>
+    <div class="fbox">
+      <span class="lbl">Weight Update Rule (★ Exam Must-Memorize)</span>
+      <div class="f">Δwᵢ = η × (target − output) × xᵢ</div>
+      <div class="f">wᵢ(new) = wᵢ(old) + Δwᵢ</div>
+      <div class="n">η = learning rate. target t ∈ {0,1}. output y ∈ {0,1}.</div>
+      <div class="n">If output = target (correct): Δwᵢ = 0 (no change)</div>
+      <div class="n">If output = 0, target = 1 (missed): Δwᵢ = +η × xᵢ (increase weights for active inputs)</div>
+      <div class="n">If output = 1, target = 0 (false alarm): Δwᵢ = -η × xᵢ (decrease weights)</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>⭐⭐⭐ RTU Numerical — Perceptron Training (2023 Part C Q5)</h3>
+    <div class="ex">
+      <div class="ex-lbl">📌 Perceptron on Truth Table — Full Solution</div>
+      <p><strong>Given:</strong> Initial weights w₀=0.03, w₁=-0.04, w₂=0.04. Learning rate η=0.4. Bias=-1. Activation: g(h)=1 if h&gt;0, g(h)=0 if h≤0.</p>
+      <p><strong>Training data (NOR-like pattern):</strong></p>
+      <pre>
+X    Y    Target    (x₁,x₂ = X,Y)
+1    1    0
+1    0    0
+0    1    1
+0    0    1</pre>
+      <h4>Iteration 1 — Sample (1,1), Target=0</h4>
+      <pre>
+h = w₀×(-1) + w₁×1 + w₂×1
+  = 0.03×(-1) + (-0.04)×1 + 0.04×1
+  = -0.03 - 0.04 + 0.04 = -0.03
+
+g(-0.03) = 0 (since -0.03 ≤ 0)
+output = 0, target = 0 → CORRECT, no update</pre>
+      <h4>Sample (1,0), Target=0</h4>
+      <pre>
+h = 0.03×(-1) + (-0.04)×1 + 0.04×0
+  = -0.03 - 0.04 + 0 = -0.07
+g(-0.07) = 0 = target → CORRECT, no update</pre>
+      <h4>Sample (0,1), Target=1</h4>
+      <pre>
+h = 0.03×(-1) + (-0.04)×0 + 0.04×1
+  = -0.03 + 0 + 0.04 = 0.01
+g(0.01) = 1 = target → CORRECT, no update</pre>
+      <h4>Sample (0,0), Target=1</h4>
+      <pre>
+h = 0.03×(-1) + (-0.04)×0 + 0.04×0
+  = -0.03 + 0 + 0 = -0.03
+g(-0.03) = 0, but target = 1 → ERROR!
+
+Update: Δwᵢ = η × (target - output) × xᵢ
+Δw₀ = 0.4 × (1-0) × (-1) = -0.4    w₀_new = 0.03 + (-0.4) = -0.37
+Δw₁ = 0.4 × (1-0) × 0 = 0          w₁_new = -0.04
+Δw₂ = 0.4 × (1-0) × 0 = 0          w₂_new = 0.04
+
+Updated weights: w₀=-0.37, w₁=-0.04, w₂=0.04</pre>
+      <p><strong>Continue iterations</strong> until all 4 samples produce correct output in one pass (convergence). RTU expects 2-3 iterations shown.</p>
+      <div class="tip note"><div class="ti">✅</div><div class="tb"><div class="ttl">Validation: Check All Outputs</div><p>After each complete pass through all samples, verify all 4 outputs = targets. If YES → converged. If NO → do another iteration. Perceptron convergence theorem: if data is linearly separable, the algorithm WILL converge in finite iterations.</p></div></div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Perceptron</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Train a perceptron model to learn the truth table (NOR pattern). Show iteration steps. w₀=0.03, w₁=-0.04, w₂=0.04, η=0.4, bias=-1.</div>
+      <div class="pyq-meta">Aug 2023 · Part C Q5 · 15 marks ⭐⭐</div>
+      <div class="pyq-topic">Topic: Perceptron Training · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">Full step-by-step solution in the theory section above. For the exam, structure your answer as:<br><br>
+        1. Write the perceptron model: h = w₀b + w₁x₁ + w₂x₂, output = step(h)<br>
+        2. For each sample in order: compute h → apply activation → compare with target → update if wrong<br>
+        3. Show weight update calculations clearly in table format<br>
+        4. Repeat until convergence (all 4 samples correct in one pass)<br>
+        5. State final weights and verify all outputs<br><br>
+        The "decision boundary" is the line w₀b + w₁x₁ + w₂x₂ = 0, which changes after each weight update.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MULTILAYER -->
+<section class="section" id="multilayer">
+  <div class="sec-head"><span class="sec-num">06</span><h2 class="sec-title">Multilayer Network</h2><span class="ipill hb hb-r">88% · Short Notes</span></div>
+  <div class="theory">
+    <h3>Why Multilayer? — XOR Problem</h3>
+    <p>A single-layer perceptron can ONLY learn linearly separable patterns. XOR is NOT linearly separable (you cannot draw a single straight line to separate 0s and 1s). Adding hidden layers solves this.</p>
+    <p>A <span class="hl">Multilayer Perceptron (MLP)</span> has one or more hidden layers between input and output. Each hidden layer transforms the data into a new representation — ultimately making even non-linear problems linearly separable in the final transformed space.</p>
+    <div class="diag">
+      <svg viewBox="0 0 580 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="18" fill="#a78bfa" font-family="Syne" font-size="12" font-weight="700">XOR — Not solvable by single perceptron, requires hidden layer</text>
+        <!-- XOR scatter -->
+        <text x="70" y="50" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="11">✓ (0,1)=1</text>
+        <text x="130" y="120" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="11">✓ (1,0)=1</text>
+        <text x="70" y="120" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="11">✗ (0,0)=0</text>
+        <text x="130" y="50" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="11">✗ (1,1)=0</text>
+        <text x="100" y="140" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">No single line can separate ✓ and ✗</text>
+        <!-- Solution with hidden layer -->
+        <rect x="230" y="30" width="330" height="110" rx="6" fill="#0f1420" stroke="#1c2638" stroke-width="1"/>
+        <text x="395" y="50" text-anchor="middle" fill="#a78bfa" font-family="Syne" font-size="11" font-weight="700">Solution: Hidden Layer Transforms Space</text>
+        <text x="245" y="75" fill="#34d399" font-family="IBM Plex Mono" font-size="9">Input → Hidden Layer → New representation</text>
+        <text x="245" y="95" fill="#34d399" font-family="IBM Plex Mono" font-size="9">where XOR becomes linearly separable!</text>
+        <text x="245" y="115" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Universal Approximation Theorem:</text>
+        <text x="245" y="130" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">1 hidden layer can approximate any function</text>
+      </svg>
+      <div class="diag-cap">Fig 6.1 — XOR requires hidden layer; single layer fails</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Key Properties of Multilayer Networks</h3>
+    <ul>
+      <li><strong>Universal Function Approximation:</strong> A network with one hidden layer and sufficient neurons can approximate any continuous function (Universal Approximation Theorem).</li>
+      <li><strong>Non-linear transformations:</strong> Each hidden layer applies a non-linear activation, allowing the network to learn complex patterns.</li>
+      <li><strong>Representation learning:</strong> Each layer learns increasingly abstract features — pixels → edges → shapes → objects (in image recognition).</li>
+    </ul>
+    <h4>Forward Pass Computation</h4>
+    <div class="fbox">
+      <span class="lbl">Forward Propagation (Layer by Layer)</span>
+      <div class="f">Layer 1 (hidden): h = f(W¹ · x + b¹)</div>
+      <div class="f">Layer 2 (output): ŷ = g(W² · h + b²)</div>
+      <div class="n">W¹,W² = weight matrices, b¹,b² = bias vectors, f,g = activation functions</div>
+      <div class="n">Matrix multiply → add bias → apply activation → next layer</div>
+    </div>
+    <h4>2-Layer vs 3-Layer Neural Network (2024 Part A Q2)</h4>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>2-Layer (1 hidden)</th><th>3-Layer (2 hidden)</th></tr>
+      <tr><td>Architecture</td><td>Input → Hidden → Output</td><td>Input → Hidden1 → Hidden2 → Output</td></tr>
+      <tr><td>Complexity</td><td>Can solve most non-linear problems</td><td>Can solve more complex patterns</td></tr>
+      <tr><td>Training time</td><td>Faster</td><td>Slower</td></tr>
+      <tr><td>Vanishing gradient risk</td><td>Low</td><td>Higher (more layers)</td></tr>
+      <tr><td>Feature abstraction</td><td>1 level of abstraction</td><td>2 levels of abstraction</td></tr>
+    </table>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Multilayer Network</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is multilayer neural network? Explain Back propagation Learning Algorithm.</div>
+      <div class="pyq-meta">2024 · Part C Q2 · 10 marks</div>
+      <div class="pyq-topic">Topic: Multilayer Network, Backpropagation · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Multilayer Neural Network:</strong><br>
+        A multilayer neural network (MLP) consists of an input layer, one or more hidden layers, and an output layer. Each layer is fully connected to the next. Hidden layers use non-linear activation functions (sigmoid, tanh, ReLU) enabling the network to learn complex, non-linear patterns that a single-layer perceptron cannot.<br><br>
+        The Universal Approximation Theorem states that a single hidden layer with sufficient neurons can approximate any continuous function.<br><br>
+        [Draw 3-layer ANN diagram — see Fig 4.1 in ANN section]<br><br>
+        <strong>Backpropagation Learning Algorithm:</strong><br>
+        (See full explanation in the next section — Backpropagation)
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Suppose you had a neural network with linear activation functions. Show there is a network with no hidden units that computes the same function.</div>
+      <div class="pyq-meta">June 2022 · Part C Q5b · 8 marks</div>
+      <div class="pyq-topic">Topic: Linear Activation, Multilayer Networks · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Key insight:</strong> If all activation functions are linear, f(x) = cx, then the entire multilayer network collapses to a single linear transformation, regardless of depth.<br><br>
+        <strong>Proof for 1 hidden layer:</strong><br>
+        Let network: Input x → Hidden h → Output y<br>
+        h = c·(W¹x + b¹) = cW¹x + cb¹<br>
+        y = c·(W²h + b²) = c·W²·(cW¹x + cb¹) + cb²<br>
+        y = c²W²W¹x + c²W²b¹ + cb²<br>
+        y = W_effective·x + b_effective<br>
+        where W_effective = c²W²W¹ (a single weight matrix) and b_effective is a bias vector.<br><br>
+        This is exactly a single-layer (no hidden layer) network with weight W_effective! So the hidden layer adds NO expressive power.<br><br>
+        <strong>Conclusion:</strong> With linear activation functions, no matter how many hidden layers, the network is equivalent to a single linear layer (single matrix multiplication). This is why NON-LINEAR activations (sigmoid, ReLU, tanh) are essential — they prevent this collapse and give deep networks their expressive power.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BACKPROPAGATION -->
+<section class="section" id="backprop">
+  <div class="sec-head"><span class="sec-num">07</span><h2 class="sec-title">Backpropagation Algorithm</h2><span class="ipill hb hb-r">🔥 92% — Most Asked!</span></div>
+  <div class="theory">
+    <h3>The Big Idea — Learning from Mistakes</h3>
+    <p><span class="hl">Backpropagation</span> is the algorithm used to train multilayer neural networks. It works by computing the gradient of the loss function with respect to each weight using the chain rule of calculus, then updating weights in the direction that reduces the loss.</p>
+    <p><strong>Two passes for each training example:</strong></p>
+    <ul>
+      <li><span class="hl">Forward pass:</span> Compute output and loss (error) — data flows forward.</li>
+      <li><span class="hl">Backward pass:</span> Compute gradients and update weights — error signals flow backward.</li>
+    </ul>
+  </div>
+  <div class="theory">
+    <h3>Backpropagation — Step by Step</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Initialize weights</strong> randomly (small values near 0).</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Forward Pass:</strong> For input x, compute activations layer by layer: hˡ = f(Wˡ·hˡ⁻¹ + bˡ). Compute output ŷ = hᴸ.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Compute Loss:</strong> E = ½(t - ŷ)² for MSE, or cross-entropy for classification. This is the error to minimize.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Backward Pass — Output Layer:</strong> Compute output delta: δᴸ = (t - ŷ) × f'(hᴸ)</div></div>
+      <div class="step"><div class="sn">5</div><div class="st"><strong>Backward Pass — Hidden Layers:</strong> Propagate delta backwards: δˡ = (Wˡ⁺¹ᵀ · δˡ⁺¹) × f'(hˡ)</div></div>
+      <div class="step"><div class="sn">6</div><div class="st"><strong>Update Weights:</strong> ΔWˡ = η × δˡ × (hˡ⁻¹)ᵀ. New weight: Wˡ ← Wˡ + ΔWˡ</div></div>
+      <div class="step"><div class="sn">7</div><div class="st"><strong>Repeat</strong> Steps 2–6 for all training examples and multiple epochs until loss converges.</div></div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Key Backprop Formulas (★★★ Memorize)</span>
+      <div class="f">Loss:         E = ½ Σ(tₖ - yₖ)²   (sum over output neurons)</div>
+      <div class="f">Output delta: δₖ = (tₖ - yₖ) · f'(netₖ)   where f'(x) = f(x)·(1-f(x)) for sigmoid</div>
+      <div class="f">Hidden delta: δⱼ = f'(netⱼ) · Σₖ δₖ · wⱼₖ</div>
+      <div class="f">Weight update: Δwᵢⱼ = η · δⱼ · yᵢ   (from layer i to layer j)</div>
+      <div class="n">η = learning rate. f'(x) = sigmoid derivative. Chain rule applied backwards.</div>
+    </div>
+    <h4>Sigmoid Derivative (Important for Numericals)</h4>
+    <div class="fbox">
+      <div class="f">sigmoid: σ(x) = 1/(1 + e⁻ˣ)</div>
+      <div class="f">derivative: σ'(x) = σ(x) × (1 - σ(x))</div>
+      <div class="n">This property makes backprop efficient — the derivative is computable from the output itself!</div>
+    </div>
+    <div class="diag">
+      <svg viewBox="0 0 580 120" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="20" fill="#a78bfa" font-family="Syne" font-size="12" font-weight="700">Backpropagation Flow</text>
+        <!-- Forward -->
+        <rect x="10" y="35" width="100" height="40" rx="5" fill="#0f1420" stroke="#34d399" stroke-width="1.5"/>
+        <text x="60" y="52" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">Input x</text>
+        <text x="60" y="67" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Layer 1</text>
+        <polygon points="113,55 130,48 130,62" fill="#34d399"/>
+        <rect x="133" y="35" width="100" height="40" rx="5" fill="#0f1420" stroke="#34d399" stroke-width="1.5"/>
+        <text x="183" y="52" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">Hidden h</text>
+        <text x="183" y="67" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Layer 2</text>
+        <polygon points="236,55 253,48 253,62" fill="#34d399"/>
+        <rect x="256" y="35" width="100" height="40" rx="5" fill="#0f1420" stroke="#34d399" stroke-width="1.5"/>
+        <text x="306" y="52" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">Output ŷ</text>
+        <text x="306" y="67" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Layer 3</text>
+        <polygon points="359,55 376,48 376,62" fill="#f43f5e"/>
+        <rect x="379" y="35" width="90" height="40" rx="5" fill="#0f1420" stroke="#f43f5e" stroke-width="1.5"/>
+        <text x="424" y="52" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="9">Loss E</text>
+        <text x="424" y="67" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">= ½(t-ŷ)²</text>
+        <!-- Labels -->
+        <text x="300" y="25" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">FORWARD PASS →</text>
+        <!-- Backward arrows -->
+        <path d="M424,78 Q306,110 183,78" stroke="#f43f5e" stroke-width="2" fill="none" stroke-dasharray="5,3" marker-end="url(#ba)"/>
+        <text x="306" y="108" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="9">← BACKWARD PASS (gradient ∂E/∂w)</text>
+        <defs><marker id="ba" markerWidth="6" markerHeight="5" refX="2" refY="2.5" orient="auto"><polygon points="6 0,0 2.5,6 5" fill="#f43f5e"/></marker></defs>
+      </svg>
+      <div class="diag-cap">Fig 7.1 — Forward pass computes output; backward pass propagates error gradients to update weights</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Backpropagation</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Write short notes on: (a) Perceptions (b) Multilayer Network (c) Back Propagation (d) Artificial Neural Network</div>
+      <div class="pyq-meta">May 2025 · Part C Q1 · 10 marks ⭐⭐</div>
+      <div class="pyq-topic">Topic: Perceptron, Multilayer, Backprop, ANN · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>(a) Perceptron:</strong> The simplest ANN — a single neuron with adjustable weights. Computes h = Σwᵢxᵢ + bias, outputs 1 if h&gt;0 else 0. Learns using perceptron learning rule: Δwᵢ = η(t-y)xᵢ. Can only solve linearly separable problems (AND, OR). Cannot solve XOR. [Draw single neuron diagram]<br><br>
+        <strong>(b) Multilayer Network (MLP):</strong> ANN with one or more hidden layers. Enables learning non-linear patterns (XOR, etc.). Uses non-linear activation functions (sigmoid, ReLU). Universal Approximation: 1 hidden layer + enough neurons = any function. Forward pass: hˡ = f(Wˡhˡ⁻¹+bˡ). Trained by backpropagation. [Draw 3-layer diagram]<br><br>
+        <strong>(c) Backpropagation:</strong> Training algorithm for MLPs. Two phases:<br>
+        1. Forward pass: compute output ŷ, compute loss E = ½(t-ŷ)²<br>
+        2. Backward pass: compute gradients ∂E/∂w using chain rule, propagate from output to input<br>
+        Output delta: δₒ = (t-y)f'(net). Hidden delta: δₕ = f'(net)Σδₒwₒₕ.<br>
+        Weight update: Δw = η·δ·input. Works by gradient descent on loss surface. [Draw forward/backward flow diagram]<br><br>
+        <strong>(d) ANN:</strong> Computational model inspired by biological brain. Consists of input layer, hidden layer(s), output layer with weighted connections. Each neuron: net input h = Σwᵢxᵢ+b, output = f(h). Learns by adjusting weights via backpropagation. Applications: image recognition, NLP, speech recognition, autonomous driving. [Draw ANN structure diagram]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEEP LEARNING -->
+<section class="section" id="deeplearning">
+  <div class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">Introduction to Deep Learning</h2><span class="ipill hb hb-r">88% · Part B</span></div>
+  <div class="theory">
+    <h3>What is Deep Learning?</h3>
+    <p><span class="hl">Deep Learning</span> is a subfield of machine learning that uses neural networks with <strong>many hidden layers</strong> (hence "deep") to automatically learn hierarchical feature representations from raw data. The depth enables learning at multiple levels of abstraction.</p>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Traditional ML</th><th>Deep Learning</th></tr>
+      <tr><td>Feature engineering</td><td>Manual (domain expert designs features)</td><td>Automatic (learns features from raw data)</td></tr>
+      <tr><td>Data requirement</td><td>Works with small data</td><td>Needs large data (millions of examples)</td></tr>
+      <tr><td>Compute requirement</td><td>CPU sufficient</td><td>GPU/TPU often needed</td></tr>
+      <tr><td>Interpretability</td><td>Mostly interpretable</td><td>"Black box" — hard to interpret</td></tr>
+      <tr><td>Performance on unstructured data</td><td>Moderate</td><td>State-of-the-art (images, text, speech)</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>Key Deep Learning Architectures</h3>
+    <h4>1. Convolutional Neural Networks (CNN)</h4>
+    <p>Specialized for <strong>image data</strong>. Uses convolutional layers to detect local patterns (edges, textures, shapes). Pooling layers reduce spatial dimensions. Applications: image classification, object detection, face recognition.</p>
+    <div class="fbox">
+      <div class="f">CNN Layers: Input → [Conv → ReLU → Pool]ⁿ → Flatten → FC → Output</div>
+    </div>
+    <h4>2. Recurrent Neural Networks (RNN)</h4>
+    <p>Specialized for <strong>sequential data</strong>. Has loops — output from previous step feeds back as input. Maintains "memory" of past steps. Applications: text, speech, time series. Variant: LSTM (Long Short-Term Memory) handles long dependencies.</p>
+    <h4>3. Autoencoders</h4>
+    <p>Encoder compresses input to low-dimensional representation (latent space). Decoder reconstructs from latent space. Applications: dimensionality reduction, anomaly detection, generative models.</p>
+    <h4>4. Transformers (Most Recent)</h4>
+    <p>Uses attention mechanism — processes all input simultaneously, not sequentially. Foundation of GPT, BERT, ChatGPT. State-of-the-art for NLP.</p>
+  </div>
+  <div class="theory">
+    <h3>Key Deep Learning Concepts</h3>
+    <h4>Vanishing/Exploding Gradient Problem</h4>
+    <p>In deep networks, gradients can become extremely small (vanishing) or large (exploding) during backpropagation, making training impossible.</p>
+    <p><strong>Solutions:</strong> ReLU activation (doesn't saturate), Batch Normalization, Residual connections (skip connections in ResNet), Gradient clipping for exploding.</p>
+    <h4>Dropout — Regularisation for Deep Networks</h4>
+    <p>During training, randomly "drop" (zero out) some neurons with probability p. Forces network to learn redundant representations. Prevents overfitting. At test time, use all neurons with scaled weights.</p>
+    <h4>Transfer Learning</h4>
+    <p>Use a pre-trained deep network (trained on ImageNet) and fine-tune on your specific task. Dramatically reduces data and compute requirements. Foundation of modern applied deep learning.</p>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Deep Learning</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain the concept of deep learning in detail.</div>
+      <div class="pyq-meta">May 2025 · Part B Q1 · 4 marks</div>
+      <div class="pyq-topic">Topic: Deep Learning · Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Deep Learning:</strong><br>
+        Deep learning is a subfield of machine learning based on artificial neural networks with multiple hidden layers (typically &gt;3). The "depth" enables automatic learning of hierarchical feature representations — low-level features in early layers (edges, pixels) → high-level features in deep layers (faces, objects).<br><br>
+        <strong>Key Characteristics:</strong><br>
+        • Automatic feature extraction: No manual feature engineering needed<br>
+        • End-to-end learning: Raw input → output directly<br>
+        • Requires large data and compute (GPU/TPU)<br>
+        • State-of-the-art on images, speech, text<br><br>
+        <strong>Main Architectures:</strong><br>
+        1. CNN (Convolutional Neural Networks) — images, video<br>
+        2. RNN/LSTM — sequences, time series, text<br>
+        3. Transformer — NLP (BERT, GPT)<br>
+        4. Autoencoder — unsupervised representation learning<br><br>
+        <strong>Challenges:</strong> Vanishing gradients (solved by ReLU, batch norm), overfitting (solved by dropout, regularisation), black box nature (limited interpretability).<br><br>
+        <strong>Applications:</strong> AlphaGo (games), self-driving cars, ChatGPT (language), image classification (ImageNet), medical diagnosis (cancer detection), speech recognition (Siri, Alexa).
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain why precision or recall alone is not a sufficient measure. Discuss AUC-ROC curve in classification problems.</div>
+      <div class="pyq-meta">Aug 2023 · Part C Q2 · 15 marks (overlaps Unit 4)</div>
+      <div class="pyq-topic">Topic: Model Evaluation, AUC-ROC · Unit 4 + Unit 6</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Why Precision and Recall alone are insufficient:</strong><br>
+        • Precision = TP/(TP+FP): "Of all predicted positives, how many are truly positive?" High precision alone is achievable by making very few positive predictions.<br>
+        • Recall = TP/(TP+FN): "Of all actual positives, how many did we catch?" High recall alone is achievable by predicting everything as positive.<br><br>
+        These metrics trade off against each other: You can always increase recall by predicting more positives (but precision drops), or increase precision by predicting fewer positives (but recall drops). Neither metric alone captures both aspects. F1-score (harmonic mean) balances them, but it uses a fixed threshold.<br><br>
+        <strong>AUC-ROC Curve:</strong><br>
+        ROC = Receiver Operating Characteristic. Plots:<br>
+        • X-axis: False Positive Rate (FPR) = FP/(FP+TN) — at each threshold<br>
+        • Y-axis: True Positive Rate (TPR) = Recall = TP/(TP+FN) — at each threshold<br><br>
+        By varying the classification threshold from 0 to 1, we get a curve. AUC = Area Under this Curve.<br><br>
+        AUC interpretation:<br>
+        • AUC = 1.0: Perfect classifier<br>
+        • AUC = 0.5: Random classifier (diagonal line)<br>
+        • AUC &gt; 0.7: Good model; AUC &gt; 0.9: Excellent<br><br>
+        Advantage of AUC: Threshold-independent — evaluates classifier performance across ALL possible thresholds, not just one. Good for imbalanced datasets where accuracy is misleading. [Draw ROC curves with diagonal reference line]
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALL PYQS -->
+<section class="section" id="pyqs">
+  <div class="sec-head"><span class="sec-num">✦</span><h2 class="sec-title">All RTU PYQs — Unit 6 Master List</h2></div>
+  <div class="theory">
+    <h3>Part A (2 marks) — Unit 6</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2024</td><td>Differentiate between 2-layer and 3-layer neural network</td><td>Multilayer ⭐</td></tr>
+      <tr><td>2024</td><td>Give advantages of content-based filtering</td><td>Content-Based ⭐</td></tr>
+      <tr><td>2023</td><td>Describe the structure of Artificial Neural Networks</td><td>ANN ⭐</td></tr>
+      <tr><td>2023</td><td>Name and define similarity techniques in recommendation system</td><td>Recommender ⭐</td></tr>
+      <tr><td>2022</td><td>Describe ANN application for autonomous vehicle steering</td><td>ANN ⭐</td></tr>
+      <tr><td>2022</td><td>How to build a music recommendation system? List steps.</td><td>Recommender ⭐</td></tr>
+    </table>
+    <h3 style="margin-top:20px">Part B (4-8 marks) — Unit 6</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>Explain deep learning concept in detail</td><td>Deep Learning ⭐⭐</td></tr>
+      <tr><td>2023</td><td>Recommender Systems + Collaborative + Content-Based filtering</td><td>Recommender ⭐⭐</td></tr>
+      <tr><td>2022</td><td>Collaborative + Content-Based RS — role, advantages, disadvantages</td><td>Recommender ⭐⭐</td></tr>
+      <tr><td>2022</td><td>How does CF recommendation differ from classification? Explain.</td><td>Recommender</td></tr>
+    </table>
+    <h3 style="margin-top:20px">Part C (10-15 marks) — Unit 6</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>Short notes: Perceptions, Multilayer, Backpropagation, ANN</td><td>All Neural Network ⭐⭐⭐</td></tr>
+      <tr><td>2024</td><td>Multilayer Neural Network + Backpropagation</td><td>MLP + Backprop ⭐⭐</td></tr>
+      <tr><td>2023</td><td>AUC-ROC curve + precision/recall insufficiency</td><td>Model Evaluation ⭐</td></tr>
+      <tr><td>2023</td><td>Perceptron training on truth table (w₀=0.03, w₁=-0.04, w₂=0.04)</td><td>Perceptron ⭐⭐</td></tr>
+      <tr><td>2022</td><td>Collaborative + Content-Based RS (advantages, disadvantages)</td><td>Recommender ⭐</td></tr>
+      <tr><td>2022</td><td>Neural network with linear activations — prove collapse to single layer</td><td>Multilayer ⭐</td></tr>
+      <tr><td>2022</td><td>Backpropagation network — single sample 100 times scenario</td><td>Backprop ⭐</td></tr>
+    </table>
+  </div>
+  <div class="tip trick"><div class="ti">🏆</div><div class="tb"><div class="ttl">Top 5 Must-Master for Exam</div><p>
+    <strong>1.</strong> ANN structure diagram + mathematical model of single neuron<br>
+    <strong>2.</strong> Backpropagation — forward pass, loss, delta formulas, weight update<br>
+    <strong>3.</strong> Perceptron training numerical — step function + weight update iterations<br>
+    <strong>4.</strong> Collaborative vs Content-Based filtering comparison table<br>
+    <strong>5.</strong> Deep Learning — architectures (CNN, RNN, Transformer), challenges, applications
+  </p></div></div>
+</section>
+
+</main>
+</div>
+
+<button class="fab" id="fabBtn" onclick="openSB()">☰</button>
+<script>
+function openSB(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('vis');document.getElementById('fabBtn').textContent='✕'}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('vis');document.getElementById('fabBtn').textContent='☰'}
+const secs=document.querySelectorAll('.section'),navs=document.querySelectorAll('.navitem');
+window.addEventListener('scroll',()=>{let cur='';secs.forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id});navs.forEach(n=>{n.classList.remove('active');if(n.getAttribute('href')==='#'+cur)n.classList.add('active')})});
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
