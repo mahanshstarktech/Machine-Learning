@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Unit 3 — Unsupervised Learning | RTU VI Sem</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap');
+:root{
+  --bg:#080a0d;--bg2:#0c0f14;--surface:#101520;--surface2:#171f2c;
+  --border:#1e2838;--border2:#141d2a;
+  --acc:#f59e0b;--acc2:#60a5fa;--acc3:#f43f5e;--acc4:#34d399;--gold:#fbbf24;
+  --text:#dde4f0;--dim:#5a6a85;--dim2:#8899b0;
+  --mono:'IBM Plex Mono',monospace;--head:'Syne',sans-serif;--body:'Source Serif 4',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.75;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.topnav{position:sticky;top:0;z-index:200;background:rgba(8,10,13,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);padding:0 20px;display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.tnlabel{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);padding:13px 12px 13px 0;border-right:1px solid var(--border);margin-right:6px;white-space:nowrap;flex-shrink:0}
+.tnlink{font-family:var(--mono);font-size:11px;padding:7px 13px;border-radius:5px;text-decoration:none;color:var(--dim2);white-space:nowrap;flex-shrink:0;transition:all .18s;border:1px solid transparent}
+.tnlink:hover{color:var(--text);background:var(--surface2)}
+.tnlink.active{color:var(--acc);background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.28)}
+.hero{position:relative;overflow:hidden;padding:64px 36px 56px;background:var(--bg)}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(245,158,11,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,0.04) 1px,transparent 1px);background-size:44px 44px;animation:gs 28s linear infinite}
+@keyframes gs{0%{transform:translateY(0)}100%{transform:translateY(44px)}}
+.hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% -5%,rgba(245,158,11,0.12) 0%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);animation:fup .6s ease both}
+.edot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+@keyframes fup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.hero-title{font-family:var(--head);font-weight:800;font-size:clamp(36px,7vw,72px);line-height:1.0;color:#fff;letter-spacing:-1px;animation:fup .6s .1s ease both}
+.hero-title .grad{background:linear-gradient(135deg,#fff 30%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-sub{font-size:16px;color:var(--dim2);max-width:580px;animation:fup .6s .2s ease both}
+.hero-sub strong{color:var(--text);font-weight:600}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap;animation:fup .6s .35s ease both}
+.hb{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid}
+.hb-a{color:var(--acc);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08)}
+.hb-b{color:var(--acc2);border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.08)}
+.hb-r{color:var(--acc3);border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.08)}
+.hb-g{color:var(--acc4);border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
+.layout{display:flex;max-width:1280px;margin:0 auto}
+.sidebar{width:260px;min-width:260px;padding:24px 14px;border-right:1px solid var(--border);position:sticky;top:44px;height:calc(100vh - 44px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transition:transform .3s}
+.sb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sb-title{font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--acc)}
+.sb-close{display:none;background:none;border:1px solid var(--border);border-radius:4px;color:var(--dim2);cursor:pointer;padding:2px 8px;font-family:var(--mono);font-size:11px}
+.navitem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-family:var(--head);font-size:13px;font-weight:600;color:var(--dim2);text-decoration:none;margin-bottom:2px;transition:all .2s;border-left:2px solid transparent}
+.navitem:hover,.navitem.active{background:var(--surface2);color:var(--text)}
+.navitem.active{color:var(--acc);border-left-color:var(--acc)}
+.nimp{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;background:var(--surface2)}
+.nimp.h{color:var(--acc3)}.nimp.m{color:var(--gold)}.nimp.l{color:var(--acc4)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:98;backdrop-filter:blur(2px)}
+.overlay.vis{display:block}
+.fab{display:none;position:fixed;bottom:20px;right:20px;z-index:1000;width:50px;height:50px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;font-size:20px;color:#000;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(245,158,11,.4);transition:transform .2s}
+.fab:hover{transform:scale(1.1)}
+.content{flex:1;padding:32px 36px;max-width:calc(100% - 260px);overflow-x:hidden}
+.section{margin-bottom:60px;scroll-margin-top:60px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--acc);background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);padding:4px 8px;border-radius:4px;min-width:36px;text-align:center}
+.sec-title{font-family:var(--head);font-size:clamp(18px,3vw,22px);font-weight:800;color:#fff}
+.ipill{margin-left:auto;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px}
+.theory{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:18px}
+.theory h3{font-family:var(--head);font-size:16px;font-weight:700;color:var(--acc);margin-bottom:12px}
+.theory p{margin-bottom:10px}.theory p:last-child{margin-bottom:0}
+.theory ul,.theory ol{padding-left:20px;margin:10px 0}
+.theory li{margin-bottom:6px;font-size:15px}
+h4{font-family:var(--head);font-size:15px;font-weight:700;color:var(--text);margin:16px 0 8px}
+.fbox{background:#060911;border:1px solid rgba(245,158,11,.25);border-left:3px solid var(--acc);border-radius:8px;padding:16px 20px;margin:14px 0;font-family:var(--mono);font-size:13px;overflow-x:auto}
+.fbox .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:block}
+.fbox .f{color:#fde68a;margin:4px 0}
+.fbox .n{color:var(--dim2);font-size:12px;margin-top:8px}
+.tip{border-radius:8px;padding:15px 18px;margin:14px 0;display:flex;gap:12px}
+.tip.trick{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25)}
+.tip.note{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25)}
+.tip.link{background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.25)}
+.tip.warn{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25)}
+.ti{font-size:20px;flex-shrink:0;margin-top:2px}
+.tb{flex:1}
+.ttl{font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.tip.trick .ttl{color:var(--gold)}.tip.note .ttl{color:var(--acc4)}.tip.link .ttl{color:var(--acc2)}.tip.warn .ttl{color:var(--acc3)}
+.tb p{font-size:14px;color:var(--text);margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;display:block;overflow-x:auto}
+.tbl th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:var(--head);font-weight:700;color:var(--acc);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+.steps{margin:14px 0}
+.step{display:flex;gap:14px;margin-bottom:12px}
+.sn{width:28px;height:28px;min-width:28px;border-radius:50%;background:var(--acc);color:#000;font-family:var(--mono);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st{font-size:15px;padding-top:4px}
+.ex{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin:14px 0}
+.ex-lbl{font-family:var(--mono);font-size:10px;color:var(--acc3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:13px;color:var(--acc4);margin:12px 0;line-height:1.6}
+.pyq-sec{background:#060810;border:1px solid rgba(245,158,11,.22);border-radius:10px;padding:20px 24px;margin-top:24px}
+.pyq-head{font-family:var(--head);font-size:14px;font-weight:700;color:var(--acc);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.pyq-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
+.pyq-q{font-family:var(--head);font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.pyq-meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:8px}
+.pyq-topic{font-family:var(--mono);font-size:10px;color:var(--acc);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:10px}
+.ptog{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 14px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--acc);margin-top:8px;transition:all .2s}
+.ptog:hover{background:var(--acc);color:#000}
+.ans{display:none;margin-top:14px;font-size:14px;line-height:1.8}
+.ans.open{display:block}
+.ibar-wrap{margin-bottom:8px}
+.ibar-lbl{font-family:var(--mono);font-size:12px;color:var(--dim2);margin-bottom:4px;display:flex;justify-content:space-between}
+.ibar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.ibar-fill{height:100%;border-radius:3px}
+.ih .ibar-fill{background:var(--acc3)}.im .ibar-fill{background:var(--gold)}.il .ibar-fill{background:var(--acc4)}
+.diag{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;text-align:center;overflow-x:auto}
+.diag-cap{font-family:var(--mono);font-size:11px;color:var(--dim2);margin-top:10px}
+.hl{color:var(--acc);font-weight:600}.hl-b{color:var(--acc2)}.hl-g{color:var(--acc4)}.hl-r{color:var(--acc3)}
+.divider{border:none;border-top:1px solid var(--border);margin:30px 0}
+@media(max-width:768px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:99;background:var(--bg);transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.8)}
+  .sb-close{display:block}.fab{display:flex}
+  .content{max-width:100%;padding:20px 16px}.hero{padding:48px 20px 44px}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:8px}.ipill{margin-left:0}
+}
+@media(min-width:769px){.fab{display:none!important}.overlay{display:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="tnlabel">ML · RTU</span>
+  <a class="tnlink" href="index.html">🏠 Home</a>
+  <a class="tnlink" href="unit2.html">🎯 Unit 2: Supervised</a>
+  <a class="tnlink active" href="unit3.html">🔵 Unit 3: Unsupervised</a>
+  <a class="tnlink" href="unit4.html">📐 Unit 4: Statistical</a>
+  <a class="tnlink" href="unit5.html">🤖 Unit 5: RL</a>
+  <a class="tnlink" href="unit6.html">📡 Unit 6: Neural Nets</a>
+  <a class="tnlink" href="pyq.html">📝 Solved PYQs</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="edot"></span>ML · Unit 3 · 6E7102 / 6CS4-02</div>
+    <h1 class="hero-title">Unsupervised<br><span class="grad">Learning</span></h1>
+    <p class="hero-sub">K-Means, Hierarchical Clustering, Apriori, FP-Growth, GMM — <strong>with complete RTU numericals</strong>, PYQs 2022–2025 fully solved, and exam tricks.</p>
+    <div class="hero-badges">
+      <span class="hb hb-r">🔥 High Numericals</span>
+      <span class="hb hb-a">📐 Algorithms Step-by-Step</span>
+      <span class="hb hb-b">🧮 Apriori & FP-Growth</span>
+      <span class="hb hb-g">✅ All PYQs Solved</span>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+<div class="layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="sb-title">Topics</span>
+    <button class="sb-close" onclick="closeSB()">✕</button>
+  </div>
+  <a class="navitem active" href="#overview" onclick="closeSB()">📊 Importance</a>
+  <a class="navitem" href="#intro" onclick="closeSB()">🧠 Unsupervised Intro<span class="nimp m">75%</span></a>
+  <a class="navitem" href="#kmeans" onclick="closeSB()">⭕ K-Means Clustering<span class="nimp h">95%</span></a>
+  <a class="navitem" href="#hierarchical" onclick="closeSB()">🌲 Hierarchical Clustering<span class="nimp h">85%</span></a>
+  <a class="navitem" href="#probabilistic" onclick="closeSB()">📊 Probabilistic Clustering<span class="nimp m">75%</span></a>
+  <a class="navitem" href="#assoc" onclick="closeSB()">🔗 Association Rule Mining<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#apriori" onclick="closeSB()">🔍 Apriori Algorithm<span class="nimp h">92%</span></a>
+  <a class="navitem" href="#fpgrowth" onclick="closeSB()">🌳 FP-Growth Algorithm<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#gmm" onclick="closeSB()">🔔 Gaussian Mixture Model<span class="nimp m">78%</span></a>
+  <a class="navitem" href="#pyqs" onclick="closeSB()">📝 All PYQs</a>
+</nav>
+
+<main class="content">
+
+<!-- OVERVIEW -->
+<section class="section" id="overview">
+  <div class="sec-head"><span class="sec-num">00</span><h2 class="sec-title">Topic Importance Analysis</h2></div>
+  <div class="theory">
+    <p>Unit 3 is the <strong>most numerically heavy unit</strong> in RTU ML. K-Means, Apriori, and FP-Growth appear as Part C numericals in almost every paper. Master these and you can secure 20–25 marks.</p>
+    <div class="ibar-wrap ih" style="margin-top:16px"><div class="ibar-lbl"><span>K-Means Clustering (numerical)</span><span style="color:var(--acc3)">95%</span></div><div class="ibar"><div class="ibar-fill" style="width:95%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Apriori Algorithm (numerical)</span><span style="color:var(--acc3)">92%</span></div><div class="ibar"><div class="ibar-fill" style="width:92%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>FP-Growth Algorithm</span><span style="color:var(--acc3)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Association Rule Mining (support/confidence)</span><span style="color:var(--acc3)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Hierarchical Clustering + Dendrogram</span><span style="color:var(--gold)">85%</span></div><div class="ibar"><div class="ibar-fill" style="width:85%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Gaussian Mixture Model</span><span style="color:var(--gold)">78%</span></div><div class="ibar"><div class="ibar-fill" style="width:78%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Probabilistic Clustering</span><span style="color:var(--gold)">75%</span></div><div class="ibar"><div class="ibar-fill" style="width:75%"></div></div></div>
+  </div>
+  <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Exam Strategy</div><p>K-Means numerical (Part C, 10 marks) and Apriori/FP-Growth (Part C, 10 marks) appear EVERY year. These two alone = 20 marks. The K-Means RTU question always uses the same 8 points from 2024. Practice that exact question. For Apriori/FP-Growth, memorize the step-by-step table format — examiners award marks per step.</p></div></div>
+</section>
+
+<!-- INTRO -->
+<section class="section" id="intro">
+  <div class="sec-head"><span class="sec-num">01</span><h2 class="sec-title">Unsupervised Learning — Introduction</h2><span class="ipill hb hb-a">75%</span></div>
+  <div class="theory">
+    <h3>What is Unsupervised Learning?</h3>
+    <p><span class="hl">Unsupervised learning</span> finds hidden patterns or structures in data WITHOUT labelled examples. There is no "correct answer" provided — the algorithm must discover structure on its own.</p>
+    <p><strong>Contrast with supervised:</strong> In Unit 2 (Supervised), you trained models on (input, label) pairs. Here, you only have inputs — no labels. The algorithm must self-organise.</p>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Supervised (Unit 2)</th><th>Unsupervised (Unit 3)</th></tr>
+      <tr><td>Data</td><td>Labelled (x, y)</td><td>Unlabelled (x only)</td></tr>
+      <tr><td>Goal</td><td>Learn f(x) → y</td><td>Find hidden structure</td></tr>
+      <tr><td>Feedback</td><td>Loss / error signal</td><td>None — intrinsic criteria</td></tr>
+      <tr><td>Examples</td><td>Decision Tree, SVM</td><td>K-Means, Apriori, GMM</td></tr>
+    </table>
+    <h4>Two Main Tasks</h4>
+    <ul>
+      <li><span class="hl">Clustering:</span> Group similar data points together. (K-Means, Hierarchical, GMM)</li>
+      <li><span class="hl">Association Rule Mining:</span> Find frequent patterns and rules. (Apriori, FP-Growth)</li>
+    </ul>
+    <h4>Requirements of a Good Clustering Algorithm (2024 Part A Q7)</h4>
+    <ul>
+      <li><strong>Scalability:</strong> Handle large datasets efficiently</li>
+      <li><strong>Ability to handle different data types:</strong> Numerical, categorical, text</li>
+      <li><strong>Minimal domain knowledge:</strong> Should work with few parameters</li>
+      <li><strong>Interpretability:</strong> Results should be understandable</li>
+      <li><strong>Noise/Outlier handling:</strong> Robust to noisy data points</li>
+      <li><strong>Insensitive to input order:</strong> Same result regardless of data order</li>
+    </ul>
+  </div>
+  <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection to Unit 2 & 4</div><p>Unsupervised learning connects to Unit 2 (supervised) as a preprocessing step — cluster first, then classify within clusters. It also connects strongly to Unit 4: K-Means relates to PCA (both reduce complexity). GMM connects to Bayesian classification (Naive Bayes from Unit 2 uses the same Gaussian probability idea). These connections earn extra marks in RTU!</p></div></div>
+</section>
+
+<!-- K-MEANS -->
+<section class="section" id="kmeans">
+  <div class="sec-head"><span class="sec-num">02</span><h2 class="sec-title">K-Means Clustering</h2><span class="ipill hb hb-r">🔥 95% — Numerical Every Year!</span></div>
+  <div class="theory">
+    <h3>Core Idea — Find k Natural Groups</h3>
+    <p><span class="hl">K-Means</span> partitions n data points into <strong>k clusters</strong> where each point belongs to the cluster with the nearest centroid. It minimizes the <strong>Within-Cluster Sum of Squares (WCSS)</strong> — the total distance from each point to its cluster centre.</p>
+    <p><strong>Analogy:</strong> Imagine n students standing in a field. Pick k random "leaders." Each student walks to the nearest leader. Each leader moves to the centre of their group. Repeat until no one moves. That's K-Means.</p>
+  </div>
+  <div class="theory">
+    <h3>K-Means Algorithm (Must Memorize)</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Initialization:</strong> Choose k initial centroids (either randomly or using first k points or K-Means++ method).</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Assignment Step:</strong> Assign each data point to the nearest centroid using Euclidean distance: d(x,μ) = √[(x₁-μ₁)² + (x₂-μ₂)²]</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Update Step:</strong> Recalculate the centroid of each cluster as the mean of all points assigned to it: μₖ = (1/|Cₖ|) Σ xᵢ</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Convergence Check:</strong> If centroids don't change (or change is below threshold), STOP. Otherwise go to Step 2.</div></div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Euclidean Distance Formula (★ Used in Every Numerical)</span>
+      <div class="f">d(p, q) = √[(p₁ − q₁)² + (p₂ − q₂)²]</div>
+      <div class="n">For new centroid: μ = (Σxᵢ/n, Σyᵢ/n) = (mean of x-coords, mean of y-coords)</div>
+    </div>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Exam Calculation Trick</div><p>For Euclidean distance in RTU numericals, you DON'T need to take the square root when COMPARING distances — comparing d² is sufficient! This saves time and avoids √ errors. Example: d(P,C1)²= (2-5)²+(3-7)²=9+16=25. d(P,C2)²=(2-1)²+(3-2)²=1+1=2. Since 2 &lt; 25, assign to C2. Always works!</p></div></div>
+  </div>
+  <div class="theory">
+    <h3>⭐⭐⭐ RTU 2024 Numerical — K-Means on 8 Points</h3>
+    <p>Cluster these 8 points into 3 clusters using K-Means. Initial centroids: A₁(2,10) for Cluster A, B₁(5,8) for Cluster B, C₁(1,2) for Cluster C.</p>
+    <p><strong>Points:</strong> A₁(2,10), A₂(2,5), A₃(8,4), B₁(5,8), B₂(7,5), B₃(6,4), C₁(1,2), C₂(4,9)</p>
+    <div class="ex">
+      <div class="ex-lbl">📌 Step-by-Step Solution</div>
+      <h4>Iteration 1 — Assignment</h4>
+      <p>Using squared distances (faster). Initial centroids: μ_A=(2,10), μ_B=(5,8), μ_C=(1,2)</p>
+      <pre>
+Point    d²(A)=(p-μA)²   d²(B)=(p-μB)²   d²(C)=(p-μC)²   Assign
+A₁(2,10) (0+0)=0          (9+4)=13         (1+64)=65       → A
+A₂(2,5)  (0+25)=25        (9+9)=18         (1+9)=10        → C
+A₃(8,4)  (36+36)=72       (9+16)=25        (49+4)=53       → B
+B₁(5,8)  (9+4)=13         (0+0)=0          (16+36)=52      → B
+B₂(7,5)  (25+25)=50       (4+9)=13         (36+9)=45       → B
+B₃(6,4)  (16+36)=52       (1+16)=17        (25+4)=29       → B
+C₁(1,2)  (1+64)=65        (16+36)=52       (0+0)=0         → C
+C₂(4,9)  (4+1)=5          (1+1)=2          (9+49)=58       → B
+
+After Iter 1:
+Cluster A: {A₁(2,10)}
+Cluster B: {A₃(8,4), B₁(5,8), B₂(7,5), B₃(6,4), C₂(4,9)}
+Cluster C: {A₂(2,5), C₁(1,2)}
+</pre>
+      <h4>Compute New Centroids</h4>
+      <pre>
+μ_A = (2/1, 10/1) = (2, 10)  [unchanged]
+
+μ_B = ((8+5+7+6+4)/5, (4+8+5+4+9)/5)
+     = (30/5, 30/5) = (6, 6)
+
+μ_C = ((2+1)/2, (5+2)/2)
+     = (1.5, 3.5)
+</pre>
+      <h4>Iteration 2 — Assignment with new centroids: μ_A=(2,10), μ_B=(6,6), μ_C=(1.5,3.5)</h4>
+      <pre>
+Point    d²(A)     d²(B)=(p-6,p-6)²   d²(C)=(p-1.5,p-3.5)²   Assign
+A₁(2,10) 0         (16+16)=32           (0.25+42.25)=42.5       → A
+A₂(2,5)  25        (16+1)=17            (0.25+2.25)=2.5         → C
+A₃(8,4)  72        (4+4)=8              (42.25+0.25)=42.5       → B
+B₁(5,8)  13        (1+4)=5              (12.25+20.25)=32.5      → B
+B₂(7,5)  50        (1+1)=2              (30.25+2.25)=32.5       → B
+B₃(6,4)  52        (0+4)=4              (20.25+0.25)=20.5       → B
+C₁(1,2)  65        (25+16)=41           (0.25+2.25)=2.5         → C
+C₂(4,9)  5         (4+9)=13             (6.25+30.25)=36.5       → A
+
+After Iter 2:
+Cluster A: {A₁(2,10), C₂(4,9)}
+Cluster B: {A₃(8,4), B₁(5,8), B₂(7,5), B₃(6,4)}
+Cluster C: {A₂(2,5), C₁(1,2)}
+
+New centroids:
+μ_A = ((2+4)/2, (10+9)/2) = (3, 9.5)
+μ_B = ((8+5+7+6)/4, (4+8+5+4)/4) = (26/4, 21/4) = (6.5, 5.25)
+μ_C = ((2+1)/2, (5+2)/2) = (1.5, 3.5) [unchanged!]
+
+Continue until convergence...</pre>
+      <div class="tip note"><div class="ti">✅</div><div class="tb"><div class="ttl">Validation Check</div><p>Stop when the cluster assignments don't change between two consecutive iterations. Check: same points in same clusters as previous iteration → CONVERGED. For the exam, 2 iterations are usually sufficient to demonstrate the algorithm.</p></div></div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>K-Means Advantages & Disadvantages</h3>
+    <table class="tbl">
+      <tr><th>Advantages</th><th>Disadvantages</th></tr>
+      <tr><td>Simple to understand and implement</td><td>Must specify k in advance</td></tr>
+      <tr><td>Computationally efficient O(nkt)</td><td>Sensitive to initial centroid placement</td></tr>
+      <tr><td>Works well on spherical/convex clusters</td><td>Sensitive to outliers (centroid gets pulled)</td></tr>
+      <tr><td>Scales to large datasets</td><td>Assumes clusters are equal size/density</td></tr>
+      <tr><td>Easy to interpret results</td><td>Fails on non-spherical clusters</td></tr>
+    </table>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — K-Means</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Consider following eight points A₁(2,10), A₂(2,5), A₃(8,4), B₁(5,8), B₂(7,5), B₃(6,4), C₁(1,2), C₂(4,9). Cluster into three clusters using k-means with all necessary steps.</div>
+      <div class="pyq-meta">2024 · Part C Q1 · 10 marks ⭐⭐⭐ Classic RTU Question</div>
+      <div class="pyq-topic">Topic: K-Means Clustering · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">Full step-by-step solution provided in the theory section above. In exam, write:<br><br>
+        1. State initial centroids clearly<br>
+        2. Draw the distance calculation table for each iteration<br>
+        3. Show new centroid calculation after each iteration<br>
+        4. Repeat until convergence<br>
+        5. State final clusters<br><br>
+        Typical exam answer = 2 complete iterations with tables → full marks.</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Suppose that you are to allocate several ATMs in a region. How can a clustering algorithm such as K-means be modified for quality clustering under both constraints (obstacle objects and minimum households)?</div>
+      <div class="pyq-meta">June 2022 · Part B Q3b · 8 marks</div>
+      <div class="pyq-topic">Topic: K-Means Application · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Modified K-Means for ATM Allocation:</strong><br><br>
+        <strong>Standard K-Means modification needed:</strong><br>
+        The basic K-Means uses Euclidean distance and ignores real-world constraints. For ATM allocation with (i) obstacle constraints and (ii) minimum household constraints, we need:<br><br>
+        <strong>1. Handling Obstacle Objects (bridges, rivers, highways):</strong><br>
+        Replace Euclidean distance with <em>obstacle distance</em> (shortest path avoiding obstacles). Use graph-based shortest path (Dijkstra's algorithm) to compute actual travel distance from household to ATM location. Standard K-Means: d(p,q) = Euclidean. Modified: d(p,q) = shortest path avoiding obstacles.<br><br>
+        <strong>2. Handling Minimum Household Constraint (≥10,000 households per ATM):</strong><br>
+        Add a constraint to the assignment step: Each cluster must contain at least 10,000 households. If a cluster is too small, merge it with the nearest under-serviced cluster. Use constrained K-Means where cluster sizes have lower bounds.<br><br>
+        <strong>Modified Algorithm:</strong><br>
+        Step 1: Initialize k ATM locations (centroids) considering obstacle-free locations<br>
+        Step 2: Assign each household to nearest ATM using obstacle-aware distance<br>
+        Step 3: Check constraint — if any cluster &lt; 10,000 households, merge or reassign<br>
+        Step 4: Update centroid = obstacle-free point minimizing total travel distance<br>
+        Step 5: Repeat until convergence<br><br>
+        This is called <strong>Constrained K-Means with Obstacle-Aware Distance Metric</strong>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HIERARCHICAL -->
+<section class="section" id="hierarchical">
+  <div class="sec-head"><span class="sec-num">03</span><h2 class="sec-title">Hierarchical Clustering</h2><span class="ipill hb hb-r">85% · Part A/B</span></div>
+  <div class="theory">
+    <h3>What is Hierarchical Clustering?</h3>
+    <p><span class="hl">Hierarchical Clustering</span> builds a tree of clusters (called a <strong>dendrogram</strong>) by either successively merging small clusters into larger ones (agglomerative / bottom-up) or splitting large clusters into smaller ones (divisive / top-down).</p>
+    <p><strong>Key advantage over K-Means:</strong> No need to specify k in advance. You can choose any level of the dendrogram to get any number of clusters.</p>
+    <div class="diag">
+      <svg viewBox="0 0 560 180" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="18" fill="#f59e0b" font-family="Syne" font-size="12" font-weight="700">Dendrogram — Hierarchical Clustering</text>
+        <!-- Data points at bottom -->
+        <circle cx="50" cy="160" r="5" fill="#f59e0b"/>
+        <text x="50" y="178" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">A</text>
+        <circle cx="110" cy="160" r="5" fill="#f59e0b"/>
+        <text x="110" y="178" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">B</text>
+        <circle cx="200" cy="160" r="5" fill="#60a5fa"/>
+        <text x="200" y="178" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">C</text>
+        <circle cx="270" cy="160" r="5" fill="#60a5fa"/>
+        <text x="270" y="178" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">D</text>
+        <circle cx="350" cy="160" r="5" fill="#34d399"/>
+        <text x="350" y="178" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">E</text>
+        <circle cx="420" cy="160" r="5" fill="#34d399"/>
+        <text x="420" y="178" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">F</text>
+        <!-- Level 1 merges -->
+        <line x1="50" y1="160" x2="50" y2="120" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="110" y1="160" x2="110" y2="120" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="50" y1="120" x2="110" y2="120" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="80" y="112" text-anchor="middle" fill="#f59e0b" font-family="IBM Plex Mono" font-size="9">merge</text>
+        <line x1="200" y1="160" x2="200" y2="115" stroke="#60a5fa" stroke-width="1.5"/>
+        <line x1="270" y1="160" x2="270" y2="115" stroke="#60a5fa" stroke-width="1.5"/>
+        <line x1="200" y1="115" x2="270" y2="115" stroke="#60a5fa" stroke-width="1.5"/>
+        <line x1="350" y1="160" x2="350" y2="110" stroke="#34d399" stroke-width="1.5"/>
+        <line x1="420" y1="160" x2="420" y2="110" stroke="#34d399" stroke-width="1.5"/>
+        <line x1="350" y1="110" x2="420" y2="110" stroke="#34d399" stroke-width="1.5"/>
+        <!-- Level 2 merges -->
+        <line x1="235" y1="115" x2="235" y2="75" stroke="#60a5fa" stroke-width="1.5"/>
+        <line x1="385" y1="110" x2="385" y2="75" stroke="#34d399" stroke-width="1.5"/>
+        <line x1="235" y1="75" x2="385" y2="75" stroke="#a78bfa" stroke-width="1.5"/>
+        <!-- Level 3 merge -->
+        <line x1="80" y1="120" x2="80" y2="40" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="310" y1="75" x2="310" y2="40" stroke="#a78bfa" stroke-width="1.5"/>
+        <line x1="80" y1="40" x2="310" y2="40" stroke="#f43f5e" stroke-width="2"/>
+        <!-- Cut line -->
+        <line x1="10" y1="70" x2="550" y2="70" stroke="#fbbf24" stroke-width="1" stroke-dasharray="6,4"/>
+        <text x="520" y="65" fill="#fbbf24" font-family="IBM Plex Mono" font-size="9">cut here</text>
+        <text x="520" y="77" fill="#fbbf24" font-family="IBM Plex Mono" font-size="9">k=2 clusters</text>
+      </svg>
+      <div class="diag-cap">Fig 3.1 — Dendrogram: cutting at different heights gives different numbers of clusters</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Agglomerative (Bottom-Up) Algorithm</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st">Start: each data point is its own cluster (n clusters).</div></div>
+      <div class="step"><div class="sn">2</div><div class="st">Compute pairwise distances between all clusters.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st">Merge the two clusters with the smallest distance.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st">Update distances between new cluster and all others.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st">Repeat until all points are in one cluster (root of dendrogram).</div></div>
+    </div>
+    <h4>Inter-Cluster Similarity Measures (2024 Part B Q5 — ⭐ Very Important)</h4>
+    <table class="tbl">
+      <tr><th>Method</th><th>Formula</th><th>Property</th></tr>
+      <tr><td><span class="hl">Single Linkage</span> (min)</td><td>d(Ci,Cj) = min{d(p,q) | p∈Ci, q∈Cj}</td><td>Minimum distance between clusters. Can create "chain" clusters (elongated). Example: two clusters connected by a single bridge point.</td></tr>
+      <tr><td><span class="hl">Complete Linkage</span> (max)</td><td>d(Ci,Cj) = max{d(p,q) | p∈Ci, q∈Cj}</td><td>Maximum distance. Creates compact, roughly equal-size clusters. More robust to outliers.</td></tr>
+      <tr><td><span class="hl">Average Linkage</span></td><td>d(Ci,Cj) = Σd(p,q)/(|Ci|×|Cj|)</td><td>Average of all pairwise distances. Balance between single and complete.</td></tr>
+      <tr><td><span class="hl">Centroid Linkage</span></td><td>d(Ci,Cj) = d(μi, μj)</td><td>Distance between cluster means (centroids).</td></tr>
+      <tr><td><span class="hl">Ward's Method</span></td><td>Merges clusters with minimum increase in WCSS</td><td>Best overall cluster quality. Tends to create equal-sized clusters.</td></tr>
+    </table>
+    <h4>Advantages & Disadvantages of Hierarchical Clustering (2025 Part A Q6)</h4>
+    <table class="tbl">
+      <tr><th>Advantages</th><th>Disadvantages</th></tr>
+      <tr><td>No need to specify k in advance</td><td>Computationally expensive O(n²logn) or O(n³)</td></tr>
+      <tr><td>Dendrogram shows full cluster hierarchy</td><td>Cannot undo a merge/split decision</td></tr>
+      <tr><td>Works with any distance measure</td><td>Sensitive to noise and outliers</td></tr>
+      <tr><td>Can discover clusters of arbitrary shape</td><td>Different linkage criteria give very different results</td></tr>
+      <tr><td>Deterministic — same result every run</td><td>Not suitable for very large datasets</td></tr>
+    </table>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Hierarchical Clustering</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is a dendrogram in hierarchical clustering?</div>
+      <div class="pyq-meta">May 2025 · Part A Q7 · 2 marks</div>
+      <div class="pyq-topic">Topic: Hierarchical Clustering · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">A <strong>dendrogram</strong> is a tree-like diagram that shows the hierarchical relationship between clusters in hierarchical clustering. The x-axis represents individual data points and the y-axis represents the distance (or dissimilarity) at which clusters are merged. Cutting the dendrogram at any height gives a specific number of clusters. The longer the vertical line before a merge, the more dissimilar those clusters are. It allows visualizing the entire clustering process in one diagram and choosing the optimal number of clusters by looking for the "longest gap."</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. How to define inter-cluster similarity in Hierarchical clustering? Give example of each approach.</div>
+      <div class="pyq-meta">2024 · Part B Q5 · 4 marks</div>
+      <div class="pyq-topic">Topic: Inter-Cluster Similarity · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Inter-cluster similarity</strong> measures how far apart two clusters are. Four main approaches:<br><br>
+        <strong>1. Single Linkage (MIN):</strong> d(Ci,Cj) = minimum distance between any point in Ci and any point in Cj.<br>
+        Example: Clusters {A(1,1), B(2,2)} and {C(5,5), D(6,6)}. Single linkage = d(B,C) = √(9+9) ≈ 4.24.<br><br>
+        <strong>2. Complete Linkage (MAX):</strong> d(Ci,Cj) = maximum distance between any point in Ci and any point in Cj.<br>
+        Example: Same clusters. Complete linkage = d(A,D) = √(25+25) ≈ 7.07.<br><br>
+        <strong>3. Average Linkage:</strong> d(Ci,Cj) = average of all pairwise distances between points in Ci and Cj.<br>
+        Example: Average of d(A,C), d(A,D), d(B,C), d(B,D) = (5.66+7.07+4.24+5.66)/4 ≈ 5.66.<br><br>
+        <strong>4. Centroid Linkage:</strong> d(Ci,Cj) = distance between centroids of Ci and Cj.<br>
+        Example: centroid of Ci=(1.5,1.5), centroid of Cj=(5.5,5.5). Distance = √(16+16) ≈ 5.66.<br><br>
+        Ward's Method: Merge clusters that minimize the total increase in WCSS. Preferred for balanced, compact clusters.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBABILISTIC CLUSTERING -->
+<section class="section" id="probabilistic">
+  <div class="sec-head"><span class="sec-num">04</span><h2 class="sec-title">Probabilistic Clustering</h2><span class="ipill hb hb-a">75% · Part B</span></div>
+  <div class="theory">
+    <h3>Hard vs Soft Clustering</h3>
+    <p>In K-Means, each point belongs to <strong>exactly one</strong> cluster — this is called <span class="hl">hard (crisp) clustering</span>. But in reality, some points naturally lie between clusters. <span class="hl">Probabilistic (soft) clustering</span> assigns each point a <strong>probability of belonging to each cluster</strong>.</p>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Hard Clustering (K-Means)</th><th>Soft/Probabilistic Clustering</th></tr>
+      <tr><td>Membership</td><td>Binary (0 or 1)</td><td>Probability [0,1] for each cluster</td></tr>
+      <tr><td>Point between clusters</td><td>Forced into one</td><td>Gets partial membership</td></tr>
+      <tr><td>Uncertainty</td><td>Cannot represent</td><td>Naturally represented</td></tr>
+      <tr><td>Example algorithm</td><td>K-Means</td><td>GMM with EM algorithm</td></tr>
+    </table>
+    <h4>Example</h4>
+    <p>A customer who buys both "sports equipment" and "books" might be 60% in Cluster A (fitness) and 40% in Cluster B (academics). Hard clustering forces a choice; probabilistic clustering captures both.</p>
+    <div class="fbox">
+      <span class="lbl">Probabilistic Membership</span>
+      <div class="f">P(cₖ | xᵢ) = probability that point xᵢ belongs to cluster cₖ</div>
+      <div class="f">Σₖ P(cₖ | xᵢ) = 1   (probabilities sum to 1 for each point)</div>
+      <div class="n">The expected cluster for xᵢ is: argmax_k P(cₖ|xᵢ) — the cluster with highest probability</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Probabilistic Clustering</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain the working principle of Probabilistic clustering in Machine Learning with example.</div>
+      <div class="pyq-meta">May 2025 · Part B Q6 · 4 marks</div>
+      <div class="pyq-topic">Topic: Probabilistic Clustering · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Probabilistic Clustering — Working Principle:</strong><br><br>
+        Probabilistic clustering models each cluster as a probability distribution. Each data point is assigned a probability of membership to each cluster rather than a hard assignment.<br><br>
+        <strong>Key Idea:</strong> Assume data is generated from a mixture of k probability distributions (e.g., k Gaussian distributions). The goal is to find these distributions that best explain the data.<br><br>
+        <strong>Algorithm (EM — Expectation Maximization):</strong><br>
+        Step 1 (E-step): For each point xᵢ and cluster k, compute:<br>
+        &nbsp;&nbsp;r(i,k) = P(cluster k | xᵢ) = πₖ·N(xᵢ|μₖ,Σₖ) / Σⱼ πⱼ·N(xᵢ|μⱼ,Σⱼ)<br>
+        where r(i,k) is the "responsibility" of cluster k for point xᵢ.<br><br>
+        Step 2 (M-step): Update parameters using responsibilities:<br>
+        &nbsp;&nbsp;μₖ = Σᵢ r(i,k)·xᵢ / Σᵢ r(i,k) (weighted mean)<br>
+        &nbsp;&nbsp;Σₖ = weighted covariance<br>
+        &nbsp;&nbsp;πₖ = Σᵢ r(i,k) / n (mixing proportion)<br><br>
+        <strong>Example:</strong> 100 students — height and weight data. Some are tall-heavy (cluster 1 = athletes), some are short-light (cluster 2 = average). A medium-height, medium-weight student might be 60% likely in cluster 1 and 40% in cluster 2. Hard clustering forces a choice; probabilistic clustering keeps both probabilities.<br><br>
+        <strong>Applications:</strong> Document clustering (a document about "sports medicine" partially belongs to both sports and medical clusters), customer segmentation, image segmentation.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ASSOCIATION RULE MINING -->
+<section class="section" id="assoc">
+  <div class="sec-head"><span class="sec-num">05</span><h2 class="sec-title">Association Rule Mining</h2><span class="ipill hb hb-r">90% · Foundation for Apriori</span></div>
+  <div class="theory">
+    <h3>What is Association Rule Mining?</h3>
+    <p><span class="hl">Association Rule Mining</span> finds interesting relationships (rules) between variables in large transactional databases. The classic example is <strong>market basket analysis</strong> — "customers who buy bread and butter also buy milk."</p>
+    <p><strong>Rule format:</strong> X → Y (IF customer buys X, THEN they also buy Y)</p>
+  </div>
+  <div class="theory">
+    <h3>Key Metrics — MUST MEMORIZE for Every Paper</h3>
+    <div class="fbox">
+      <span class="lbl">Support (★ Most Important — Appears Every Year)</span>
+      <div class="f">Support(X → Y) = Support(X ∪ Y) = count(X ∪ Y) / Total transactions</div>
+      <div class="n">= Fraction of transactions that contain BOTH X and Y</div>
+      <div class="n">Example: If {Bread, Butter} appears in 3 of 5 transactions → Support = 3/5 = 60%</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Confidence</span>
+      <div class="f">Confidence(X → Y) = Support(X ∪ Y) / Support(X)</div>
+      <div class="n">= P(Y | X) = probability that Y is bought given X is bought</div>
+      <div class="n">Example: Bread in 4 transactions, {Bread,Butter} in 3 → Conf(Bread→Butter) = 3/4 = 75%</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Lift</span>
+      <div class="f">Lift(X → Y) = Confidence(X → Y) / Support(Y)</div>
+      <div class="n">Lift > 1: X and Y are positively correlated (buying X → more likely to buy Y)</div>
+      <div class="n">Lift = 1: independent. Lift &lt; 1: negatively correlated</div>
+    </div>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Quick Calculation Trick</div><p>For RTU numericals: always convert min-sup to COUNT first!<br>
+    min-sup = 60%, 5 transactions → min count = 5 × 0.6 = 3<br>
+    min-sup = 22%, 9 transactions → min count = 9 × 0.22 = 1.98 → round up to 2<br>
+    Now work with counts throughout — only convert back to % at the end.</p></div></div>
+    <h4>Strong Association Rules</h4>
+    <p>A rule X → Y is <span class="hl">strong</span> if BOTH conditions hold: Support ≥ min-sup AND Confidence ≥ min-conf.</p>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Association Rule Mining</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. How you compute support for a transactional database? Give example.</div>
+      <div class="pyq-meta">2024 · Part A Q8 · 2 marks</div>
+      <div class="pyq-topic">Topic: Support, Association Rules · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Support computation:</strong><br>
+        Support(itemset) = (Number of transactions containing the itemset) / (Total number of transactions)<br><br>
+        <strong>Example:</strong> Database with 5 transactions:<br>
+        T1: {Bread, Milk, Butter}<br>
+        T2: {Bread, Butter}<br>
+        T3: {Milk, Butter, Eggs}<br>
+        T4: {Bread, Milk}<br>
+        T5: {Bread, Butter}<br><br>
+        Support({Bread}) = 4/5 = 80%<br>
+        Support({Butter}) = 4/5 = 80%<br>
+        Support({Bread, Butter}) = 3/5 = 60%<br>
+        Support({Bread, Milk, Butter}) = 1/5 = 20%<br><br>
+        With min-sup = 60%: {Bread}, {Butter}, {Bread,Butter} are frequent. {Bread,Milk,Butter} is not.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APRIORI -->
+<section class="section" id="apriori">
+  <div class="sec-head"><span class="sec-num">06</span><h2 class="sec-title">Apriori Algorithm</h2><span class="ipill hb hb-r">🔥 92% — Numerical Every Year!</span></div>
+  <div class="theory">
+    <h3>Core Idea — The Apriori Property</h3>
+    <p><span class="hl">Apriori</span> uses a clever mathematical property to efficiently find frequent itemsets without checking all 2^n subsets:</p>
+    <div class="fbox">
+      <span class="lbl">Apriori Property (Anti-Monotonicity)</span>
+      <div class="f">If an itemset is INFREQUENT, then ALL its supersets are also INFREQUENT.</div>
+      <div class="n">Equivalently: All subsets of a frequent itemset must also be frequent.</div>
+      <div class="n">Example: If {A,B} is infrequent → {A,B,C} is definitely infrequent (no need to check!)</div>
+    </div>
+    <p>This property allows <strong>pruning</strong> — eliminating candidate itemsets early without scanning the database.</p>
+  </div>
+  <div class="theory">
+    <h3>Apriori Algorithm Steps</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Scan database:</strong> Find all frequent 1-itemsets (F₁). Any item with support ≥ min-sup.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Generate candidates C₂:</strong> Join F₁ with itself to form 2-itemset candidates.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Prune C₂:</strong> Remove any 2-itemset whose subsets (all 1-itemsets) are not in F₁.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Scan database:</strong> Count support for each candidate in C₂. Those with support ≥ min-sup form F₂.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st"><strong>Repeat:</strong> Generate Cₖ₊₁ from Fₖ, prune, scan for Fₖ₊₁ until no more frequent itemsets.</div></div>
+      <div class="step"><div class="sn">6</div><div class="st"><strong>Generate rules:</strong> For each frequent itemset, generate all possible rules and keep those with confidence ≥ min-conf.</div></div>
+    </div>
+    <div class="tip trick"><div class="ti">🧠</div><div class="tb"><div class="ttl">Prune Step Trick (2022 Part A Q3)</div><p>To prune Cₖ: for each candidate itemset of size k, check all its (k-1)-subsets. If ANY (k-1)-subset is NOT in F_{k-1}, remove the candidate. Example: Candidate {A,B,C} — check {A,B}, {A,C}, {B,C} all in F₂? If any is missing, prune {A,B,C}. Number of (k-1)-subsets of a k-itemset = C(k,k-1) = k subsets to check.</p></div></div>
+  </div>
+  <div class="theory">
+    <h3>⭐⭐⭐ RTU Numerical — Apriori on 5 Transactions (2022 Part C Q3)</h3>
+    <div class="ex">
+      <div class="ex-lbl">📌 Full Apriori Solution — min-sup=60%, min-conf=80%</div>
+      <p><strong>Transactions:</strong></p>
+      <pre>
+T100: {M, O, N, K, E, Y}
+T200: {D, O, N, K, E, Y}
+T300: {M, A, K, E}
+T400: {M, U, C, K, Y}
+T500: {C, O, O, K, I, E}
+
+Total transactions N = 5
+min-sup count = 5 × 0.60 = 3
+min-conf = 80%</pre>
+      <h4>Step 1: Find L₁ (frequent 1-itemsets)</h4>
+      <pre>
+Item  Count  Support  Frequent?
+M     3       60%     YES
+O     3       60%     YES
+N     2       40%     NO  (pruned)
+K     5      100%     YES
+E     4       80%     YES
+Y     4       80%     YES
+D     1       20%     NO  (pruned)
+A     1       20%     NO  (pruned)
+U     1       20%     NO  (pruned)
+C     2       40%     NO  (pruned)
+I     1       20%     NO  (pruned)
+
+L₁ = {M, O, K, E, Y}  (support ≥ 3)</pre>
+      <h4>Step 2: Generate C₂ from L₁</h4>
+      <pre>
+C₂ = {M,O}, {M,K}, {M,E}, {M,Y}, {O,K}, {O,E}, {O,Y}, {K,E}, {K,Y}, {E,Y}</pre>
+      <h4>Step 3: Count C₂ support</h4>
+      <pre>
+Itemset  T100 T200 T300 T400 T500  Count  Frequent?
+{M,O}     Y    N    N    N    N      1     NO
+{M,K}     Y    N    Y    Y    N      3     YES ✓
+{M,E}     Y    N    Y    N    N      2     NO
+{M,Y}     Y    N    N    Y    N      2     NO
+{O,K}     Y    Y    N    N    Y      3     YES ✓
+{O,E}     Y    Y    N    N    N      2     NO
+{O,Y}     Y    Y    N    N    N      2     NO
+{K,E}     Y    Y    Y    Y    N      4     YES ✓
+{K,Y}     Y    Y    N    Y    Y      4     YES ✓
+{E,Y}     Y    Y    N    N    N      2     NO
+
+L₂ = {{M,K}, {O,K}, {K,E}, {K,Y}}</pre>
+      <h4>Step 4: Generate C₃ from L₂</h4>
+      <pre>
+Join: Items with same prefix:
+{K,E} + {K,M} → {K,E,M}  [check: {E,M} in L₂? NO → PRUNE]
+{K,E} + {K,O} → {K,E,O}  [check: {E,O} in L₂? NO → PRUNE]
+{K,E} + {K,Y} → {K,E,Y}  [check: {E,Y} in L₂? NO → PRUNE]
+{K,M} + {K,O} → {K,M,O}  [check: {M,O} in L₂? NO → PRUNE]
+{K,M} + {K,Y} → {K,M,Y}  [check: {M,Y} in L₂? NO → PRUNE]
+{K,O} + {K,Y} → {K,O,Y}  [check: {O,Y} in L₂? NO → PRUNE]
+
+C₃ = {} → L₃ = {}  (no frequent 3-itemsets)</pre>
+      <h4>Step 5: Generate Rules from L₂</h4>
+      <pre>
+From {M,K}: Support=3/5=60%
+  M→K: conf = 3/3 = 100% ≥ 80% ✓ STRONG RULE
+  K→M: conf = 3/5 = 60% &lt; 80% ✗
+
+From {O,K}: Support=3/5=60%
+  O→K: conf = 3/3 = 100% ≥ 80% ✓ STRONG RULE
+  K→O: conf = 3/5 = 60% ✗
+
+From {K,E}: Support=4/5=80%
+  K→E: conf = 4/5 = 80% ≥ 80% ✓ STRONG RULE
+  E→K: conf = 4/4 = 100% ✓ STRONG RULE
+
+From {K,Y}: Support=4/5=80%
+  K→Y: conf = 4/5 = 80% ✓ STRONG RULE
+  Y→K: conf = 4/4 = 100% ✓ STRONG RULE
+
+STRONG RULES: M→K, O→K, K→E, E→K, K→Y, Y→K</pre>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Apriori</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Let C be a candidate item set in Cₖ generated by Apriori. How many length (K-1) subsets do we need to check in the prune step?</div>
+      <div class="pyq-meta">June 2022 · Part A Q3 · 2 marks</div>
+      <div class="pyq-topic">Topic: Apriori, Prune Step · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">For a candidate itemset C of size k, the number of (k-1)-length subsets = C(k, k-1) = <strong>k subsets</strong>.<br><br>
+        Reasoning: Each (k-1)-subset is formed by removing one of the k items from C. Since there are k items to potentially remove, there are exactly k different (k-1)-subsets.<br><br>
+        Example: C = {A,B,C} (k=3). We need to check 3 subsets: {A,B}, {A,C}, {B,C}. If ANY of these is not in F₂, then {A,B,C} is pruned from C₃.</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. A database has 9 transactions. Find all frequent item sets using Apriori. min-support=22%, min-confidence=70%.</div>
+      <div class="pyq-meta">Aug 2023 · Part C Q4 · 15 marks</div>
+      <div class="pyq-topic">Topic: Apriori Algorithm · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Given transactions (TIDs T100):</strong> L1,L2,L5 | L2,L4 | L2,L3 | L1,L2,L4 | L1,L3 | L2,L3 | L1,L3 | L1,L2,L3,L5 | L1,L2,L3<br><br>
+        N=9, min-sup count = ceil(9 × 0.22) = ceil(1.98) = <strong>2</strong>, min-conf = 70%<br><br>
+        <strong>L₁: (count all items)</strong><br>
+        L1:6, L2:7, L3:6, L4:2, L5:2 → All ≥ 2 → L₁ = {L1,L2,L3,L4,L5}<br><br>
+        <strong>C₂ (all 2-combinations of L₁) + counts:</strong><br>
+        {L1,L2}:4, {L1,L3}:4, {L1,L4}:1✗, {L1,L5}:2, {L2,L3}:4, {L2,L4}:2, {L2,L5}:2, {L3,L4}:0✗, {L3,L5}:1✗, {L4,L5}:0✗<br>
+        L₂ = {{L1,L2},{L1,L3},{L1,L5},{L2,L3},{L2,L4},{L2,L5}}<br><br>
+        <strong>C₃ from L₂:</strong><br>
+        {L1,L2,L3}: check {L1,L2}✓{L1,L3}✓{L2,L3}✓ → count=4 ✓<br>
+        {L1,L2,L5}: check {L1,L2}✓{L1,L5}✓{L2,L5}✓ → count=2 ✓<br>
+        L₃ = {{L1,L2,L3},{L1,L2,L5}}<br><br>
+        <strong>C₄: {L1,L2,L3,L5}: count=1 ✗</strong><br><br>
+        Final frequent itemsets: All of L₁, L₂, L₃ listed above.<br>
+        Generate rules with conf ≥ 70% from each frequent itemset.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FP-GROWTH -->
+<section class="section" id="fpgrowth">
+  <div class="sec-head"><span class="sec-num">07</span><h2 class="sec-title">FP-Growth Algorithm</h2><span class="ipill hb hb-r">🔥 90% — Part C Numerical</span></div>
+  <div class="theory">
+    <h3>Why FP-Growth? — Apriori's Bottleneck</h3>
+    <p>Apriori makes <strong>multiple database scans</strong> and generates huge candidate sets. For a 1000-item database, generating and checking all candidates is very slow. <span class="hl">FP-Growth (Frequent Pattern Growth)</span> solves this by compressing the database into an <strong>FP-Tree</strong> — a compact tree structure — and mining patterns directly from the tree without candidate generation.</p>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Apriori</th><th>FP-Growth</th></tr>
+      <tr><td>Database scans</td><td>k scans for k-itemsets</td><td>Only 2 scans</td></tr>
+      <tr><td>Candidate generation</td><td>Yes (often many)</td><td>No (no candidates)</td></tr>
+      <tr><td>Memory</td><td>High (large candidate sets)</td><td>Compact tree</td></tr>
+      <tr><td>Speed</td><td>Slower for large data</td><td>Much faster</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>FP-Growth Algorithm — Step by Step</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Scan 1:</strong> Count item frequencies. Remove infrequent items (support &lt; min-sup). Sort frequent items by descending frequency → get F-list.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Scan 2:</strong> Build FP-Tree. For each transaction: keep only frequent items, sort them in F-list order, insert into tree (sharing prefixes).</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Mine FP-Tree:</strong> For each frequent item (from least to most frequent), find its <strong>conditional pattern base</strong> (paths in tree leading to that item).</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Build conditional FP-Tree:</strong> Construct a new FP-Tree from the conditional pattern base.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st"><strong>Extract patterns:</strong> Frequent itemsets = item + frequent patterns in its conditional FP-tree.</div></div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>⭐⭐⭐ RTU 2024 Numerical — FP-Growth</h3>
+    <div class="ex">
+      <div class="ex-lbl">📌 FP-Growth on 5 Transactions — min-sup=60%, min-conf=80%</div>
+      <p><strong>Transactions (same as 2024 Part C Q5):</strong></p>
+      <pre>
+T1: {M,O,N,K,E,Y}
+T2: {D,O,N,K,E,Y}
+T3: {M,A,K,E}
+T4: {M,U,C,K,Y}
+T5: {C,O,O,K,I,E}
+
+min-sup count = 5 × 0.60 = 3</pre>
+      <h4>Step 1: Item Frequencies + F-list</h4>
+      <pre>
+K:5, E:4, Y:4, M:3, O:3 → All frequent (≥3)
+N:2, D:1, A:1, U:1, C:2, I:1 → Not frequent
+
+F-list (descending): K(5), E(4), Y(4), M(3), O(3)</pre>
+      <h4>Step 2: Reorder Transactions (keep only frequent items, in F-list order)</h4>
+      <pre>
+T1: {K,E,Y,M,O}   (remove N)
+T2: {K,E,Y,O}     (remove D,N)
+T3: {K,E,M}       (remove A)
+T4: {K,Y,M}       (remove U,C)
+T5: {K,E,O}       (remove C,I)</pre>
+      <h4>Step 3: Build FP-Tree</h4>
+      <pre>
+                ROOT
+                 |
+            K:5 ←────────── (header link for K)
+           / | \ \
+         E:4  Y:1  (continues)
+        /  \
+      Y:2   M:1
+      /  \
+     M:1  O:1
+     |
+     O:1
+    
+Detailed tree (inserting transaction by transaction):
+T1: K→E→Y→M→O  (K:1,E:1,Y:1,M:1,O:1)
+T2: K→E→Y→O    (K:2,E:2,Y:2; new branch at O:1)
+T3: K→E→M      (K:3,E:3; new branch at M:1)
+T4: K→Y→M      (K:4; new branch Y:1→M:1)
+T5: K→E→O      (K:5,E:4; new branch O:1)
+
+Final FP-Tree:
+ROOT
+ └── K:5
+      ├── E:4
+      │    ├── Y:2
+      │    │    ├── M:1
+      │    │    │    └── O:1
+      │    │    └── O:1
+      │    ├── M:1
+      │    └── O:1
+      └── Y:1
+           └── M:1</pre>
+      <h4>Step 4: Mine Conditional Pattern Bases</h4>
+      <pre>
+Item O (support=3): Paths ending in O:
+  (K,E,Y,M,O:1), (K,E,Y,O:1), (K,E,O:1)
+  Conditional Pattern Base: {K,E,Y,M:1}, {K,E,Y:1}, {K,E:1}
+  Conditional FP-Tree: K:3, E:3 → min-sup=3
+  Frequent itemsets with O: {K,O:3}, {E,O:3}, {K,E,O:3}
+
+Item M (support=3): Paths ending in M:
+  (K,E,Y,M:1), (K,E,M:1), (K,Y,M:1)
+  Conditional Pattern Base: {K,E,Y:1}, {K,E:1}, {K,Y:1}
+  Conditional FP-Tree: K:3 → min-sup=3
+  Frequent itemsets with M: {K,M:3}
+
+Item Y (support=4): Paths ending in Y:
+  (K,E,Y:2), (K,Y:1) + from T2 = 4 total
+  Conditional Pattern Base: {K,E:2}, {K:2}
+  Conditional FP-Tree: K:4 → min-sup=3  
+  Also E is frequent (count=2)? No (2&lt;3).
+  Frequent itemsets with Y: {K,Y:4}
+
+Item E (support=4): Path prefix = K:4
+  Frequent itemsets with E: {K,E:4}
+
+Item K alone: K:5
+
+ALL FREQUENT ITEMSETS:
+1-itemsets: K(5), E(4), Y(4), M(3), O(3)
+2-itemsets: {K,E}(4), {K,Y}(4), {K,M}(3), {K,O}(3), {E,O}(3)
+3-itemsets: {K,E,O}(3)
+</pre>
+      <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">FP-Growth Exam Trick</div><p>For RTU exams, draw the FP-Tree clearly with counts on each node. Then for each leaf-level item (least frequent first), trace back to root for its conditional pattern base. If the conditional FP-tree has only ONE branch, just list all prefix combinations as frequent itemsets. This saves time and covers all patterns.</p></div></div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — FP-Growth</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Consider transactional database with min-sup=60% and min-conf=80%. Construct FP-Tree, Conditional Pattern Base, and Conditional FP-Tree using FP-Growth.</div>
+      <div class="pyq-meta">2024 · Part C Q5 · 10 marks ⭐⭐</div>
+      <div class="pyq-topic">Topic: FP-Growth Algorithm · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">Full step-by-step solution provided in the theory section above.<br><br>
+        <strong>Final Answers to present in exam:</strong><br>
+        (a) FP-Tree: Draw the tree with node K as root child (support 5), branching to E(4) and Y(1), etc.<br>
+        (b) Conditional Pattern Base for each item (shown above)<br>
+        (c) Conditional FP-Trees (shown above)<br>
+        (d) All frequent itemsets: {K,E,Y,M,O} as 1-itemsets; {K,E}, {K,Y}, {K,M}, {K,O}, {E,O} as 2-itemsets; {K,E,O} as 3-itemset.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Database has 5 transactions (T100-T500), min-support=60%, min-confidence=80%. Find using Apriori AND FP-Growth.</div>
+      <div class="pyq-meta">June 2022 · Part C Q3 · 15 marks ⭐⭐</div>
+      <div class="pyq-topic">Topic: Apriori + FP-Growth · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">Same transactions as 2024 Q5. Full Apriori solution in the Apriori section. FP-Growth solution in the FP-Growth section above. Both give the SAME frequent itemsets — the algorithms just use different approaches. RTU asks you to show both methods side by side, which demonstrates understanding of both.</div>
+    </div>
+  </div>
+</section>
+
+<!-- GAUSSIAN MIXTURE MODEL -->
+<section class="section" id="gmm">
+  <div class="sec-head"><span class="sec-num">08</span><h2 class="sec-title">Gaussian Mixture Model (GMM)</h2><span class="ipill hb hb-a">78% · Part B</span></div>
+  <div class="theory">
+    <h3>What is GMM?</h3>
+    <p>A <span class="hl">Gaussian Mixture Model</span> is a probabilistic model that assumes all data points are generated from a mixture of a finite number of Gaussian distributions with unknown parameters. It's the most common form of probabilistic clustering.</p>
+    <p><strong>Intuition:</strong> Imagine height data for a group of adults. The data isn't one Gaussian — it's a mixture: one Gaussian for men (mean ~175cm) and one for women (mean ~162cm). GMM tries to discover both Gaussians from the mixed data.</p>
+    <div class="fbox">
+      <span class="lbl">GMM Probability Density</span>
+      <div class="f">p(x) = Σₖ₌₁^K πₖ · N(x | μₖ, Σₖ)</div>
+      <div class="n">πₖ = mixing coefficient (weight) for component k, Σπₖ = 1</div>
+      <div class="n">N(x|μₖ,Σₖ) = Gaussian distribution with mean μₖ and covariance Σₖ</div>
+      <div class="n">K = number of mixture components (like k in K-Means)</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>EM Algorithm for GMM</h3>
+    <p>GMM parameters (πₖ, μₖ, Σₖ) are learned using the <span class="hl">Expectation-Maximization (EM) algorithm</span>:</p>
+    <div class="steps">
+      <div class="step"><div class="sn">E</div><div class="st"><strong>E-step (Expectation):</strong> For each point xᵢ and component k, compute the responsibility: r(i,k) = πₖ·N(xᵢ|μₖ,Σₖ) / Σⱼ πⱼ·N(xᵢ|μⱼ,Σⱼ). This is the probability that component k "generated" point xᵢ.</div></div>
+      <div class="step"><div class="sn">M</div><div class="st"><strong>M-step (Maximization):</strong> Update parameters using responsibilities: μₖ = Σᵢr(i,k)xᵢ / Σᵢr(i,k), Σₖ = weighted covariance, πₖ = (1/n)Σᵢr(i,k)</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Repeat</strong> E and M steps until log-likelihood converges.</div></div>
+    </div>
+    <h4>GMM vs K-Means (2023 Part B Q3)</h4>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>K-Means</th><th>GMM</th></tr>
+      <tr><td>Cluster shape</td><td>Spherical (hard boundary)</td><td>Elliptical (soft boundary)</td></tr>
+      <tr><td>Membership</td><td>Hard (binary)</td><td>Soft (probability)</td></tr>
+      <tr><td>Parameters</td><td>k centroids</td><td>k means + k covariances + k weights</td></tr>
+      <tr><td>Covariance</td><td>Assumes equal, spherical</td><td>Can model any shape</td></tr>
+      <tr><td>Uncertainty</td><td>Cannot express</td><td>Expresses via probabilities</td></tr>
+      <tr><td>K-Means relation</td><td>Special case of GMM</td><td>Generalisation of K-Means</td></tr>
+    </table>
+    <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection: GMM → K-Means (2023 Part B Q3)</div><p>K-Means is a special case of GMM! When all Gaussian components have equal, spherical covariance (Σₖ = σ²I) and equal weights (πₖ = 1/k), and we take the hard assignment (highest responsibility wins), GMM reduces exactly to K-Means. RTU often asks about this relationship — always mention it in GMM answers!</p></div></div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — GMM</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is the motivation behind the Gaussian Mixture Model? What is the relationship between k-means and PCA?</div>
+      <div class="pyq-meta">Aug 2023 · Part B Q3 · 4+4 marks</div>
+      <div class="pyq-topic">Topic: GMM, K-Means, PCA · Unit 3 + Unit 4</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Motivation for GMM:</strong><br>
+        K-Means has limitations: it assumes spherical clusters, forces hard assignments, and cannot model uncertainty. Real-world data often forms elliptical, overlapping clusters. The motivation for GMM is:<br>
+        1. <strong>Flexible cluster shapes:</strong> Gaussian distributions can model any elliptical shape via covariance matrices<br>
+        2. <strong>Soft membership:</strong> Points between clusters get fractional membership (probability) rather than forced assignment<br>
+        3. <strong>Probabilistic foundation:</strong> Enables Bayesian inference, likelihood estimation, and principled model selection<br>
+        4. <strong>Generative model:</strong> Can generate new data samples from learned distributions<br>
+        Example: Modelling heights in a mixed gender group — one Gaussian per gender, mixture models the full distribution.<br><br>
+        <strong>Relationship between K-Means and PCA:</strong><br>
+        Both K-Means and PCA are dimensionality/complexity reduction techniques, but they work differently:<br>
+        • K-Means finds cluster centroids — each centroid represents a cluster direction<br>
+        • PCA finds principal components — directions of maximum variance<br>
+        Formal relationship: K-Means with k=1 equivalent to finding the mean. With soft K-Means where membership weights are used in covariance estimation → approaches PCA. Specifically, if we relax K-Means to allow soft assignments and look at the first principal component of each cluster, it approximates what PCA does globally. Both try to find low-dimensional representations, just with different objectives.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Suppose we clustered N data points using K-means and Gaussian mixtures (both k=5, same centers). Can three points assigned to different clusters in K-means be assigned to the same cluster in Gaussian mixture? Why or why not?</div>
+      <div class="pyq-meta">June 2022 · Part A Q6 · 2 marks</div>
+      <div class="pyq-topic">Topic: GMM vs K-Means · Unit 3</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Yes, it is possible.</strong><br><br>
+        <strong>Reason:</strong> K-Means assigns each point to the nearest centroid (based on Euclidean distance alone — assumes spherical, equal-variance clusters). Gaussian mixture uses probability distributions that account for the shape and orientation of each cluster via covariance matrices.<br><br>
+        If three points are equidistant from two centroids (borderline points), K-Means arbitrarily assigns each to its nearest centroid based on distance, potentially splitting them across clusters. GMM assigns them based on the full probability density of each Gaussian. If those three points happen to lie in a high-probability region of a single Gaussian (even if not the nearest centroid in Euclidean terms), GMM can assign all three to the same cluster.<br><br>
+        Example: Points at (5,1), (5,2), (5,3) equidistant from centroids at (3,2) and (7,2). K-Means splits based on distance. But if the Gaussian at (3,2) has a large variance in the y-direction, all three points might have highest probability under that Gaussian → all in same GMM cluster.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ALL PYQS MASTER -->
+<section class="section" id="pyqs">
+  <div class="sec-head"><span class="sec-num">✦</span><h2 class="sec-title">All RTU PYQs — Unit 3 Master List</h2></div>
+  <div class="theory">
+    <h3>Part A (2 marks) — Unit 3</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>Advantages & disadvantages of hierarchical clustering</td><td>Hierarchical ⭐</td></tr>
+      <tr><td>2025</td><td>What is a dendrogram in hierarchical clustering?</td><td>Dendrogram ⭐</td></tr>
+      <tr><td>2024</td><td>Write any four requirement of Clustering Algorithm</td><td>Clustering intro</td></tr>
+      <tr><td>2024</td><td>How you compute support for transactional database? Give example.</td><td>Association Rules ⭐</td></tr>
+      <tr><td>2023</td><td>What do you mean by Associative Rule Mining?</td><td>ARM ⭐</td></tr>
+      <tr><td>2022</td><td>Apriori prune step — how many (K-1) subsets?</td><td>Apriori ⭐</td></tr>
+      <tr><td>2022</td><td>K-Means vs GMM — can same points be in different clusters?</td><td>K-Means, GMM ⭐</td></tr>
+    </table>
+    <h3 style="margin-top:20px">Part B (4-8 marks) — Unit 3</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>Working principle of Probabilistic clustering with example</td><td>Probabilistic ⭐</td></tr>
+      <tr><td>2024</td><td>Inter-cluster similarity in Hierarchical clustering + examples</td><td>Hierarchical ⭐⭐</td></tr>
+      <tr><td>2023</td><td>GMM motivation + K-means vs PCA relationship</td><td>GMM, K-Means ⭐</td></tr>
+      <tr><td>2023</td><td>Curse of dimensionality + unsupervised learning + dim reduction</td><td>General ⭐</td></tr>
+      <tr><td>2022</td><td>Application examples for clustering (major function + preprocessing)</td><td>Applications</td></tr>
+      <tr><td>2022</td><td>ATM allocation with K-Means under constraints</td><td>K-Means application ⭐</td></tr>
+    </table>
+    <h3 style="margin-top:20px">Part C (10-15 marks) — Unit 3</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2024</td><td>K-Means on 8 points A₁(2,10)...C₂(4,9) into 3 clusters</td><td>K-Means ⭐⭐⭐</td></tr>
+      <tr><td>2024</td><td>FP-Growth on 5 transactions (min-sup=60%, min-conf=80%)</td><td>FP-Growth ⭐⭐⭐</td></tr>
+      <tr><td>2023</td><td>Apriori on 9 transactions (min-sup=22%, min-conf=70%)</td><td>Apriori ⭐⭐</td></tr>
+      <tr><td>2022</td><td>Apriori + FP-Growth on 5 transactions</td><td>Apriori + FP-Growth ⭐⭐⭐</td></tr>
+    </table>
+  </div>
+  <div class="tip trick"><div class="ti">🏆</div><div class="tb"><div class="ttl">Top 5 Must-Master Topics (Priority Order)</div><p>
+    <strong>1.</strong> K-Means numerical (2024 8-point question) — practice step by step<br>
+    <strong>2.</strong> Apriori with full table format — L₁→C₂→L₂→C₃ + rule generation<br>
+    <strong>3.</strong> FP-Growth — FP-Tree construction + Conditional Pattern Base + Conditional FP-Tree<br>
+    <strong>4.</strong> Hierarchical clustering — dendrogram, linkage methods comparison table<br>
+    <strong>5.</strong> GMM vs K-Means — comparison table + EM algorithm steps
+  </p></div></div>
+  <div class="tip note"><div class="ti">📋</div><div class="tb"><div class="ttl">Answer Template for 10-mark Unit 3 Questions</div><p>
+    <strong>Para 1:</strong> Definition (what is the algorithm, 2-3 lines)<br>
+    <strong>Para 2:</strong> Key concept/property (Apriori property, centroid formula, etc.)<br>
+    <strong>Algorithm:</strong> Numbered steps<br>
+    <strong>Numerical Example:</strong> Work through the given data step by step in table format<br>
+    <strong>Diagram:</strong> FP-Tree / Dendrogram / Centroid movement diagram<br>
+    <strong>Para 5:</strong> Advantages + Applications
+  </p></div></div>
+</section>
+
+</main>
+</div>
+
+<button class="fab" id="fabBtn" onclick="openSB()">☰</button>
+<script>
+function openSB(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('vis');document.getElementById('fabBtn').textContent='✕'}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('vis');document.getElementById('fabBtn').textContent='☰'}
+const secs=document.querySelectorAll('.section'),navs=document.querySelectorAll('.navitem');
+window.addEventListener('scroll',()=>{let cur='';secs.forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id});navs.forEach(n=>{n.classList.remove('active');if(n.getAttribute('href')==='#'+cur)n.classList.add('active')})});
+</script>
+</body>
+</html>
