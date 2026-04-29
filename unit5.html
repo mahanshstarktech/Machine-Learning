@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Unit 5 — Reinforcement Learning | RTU VI Sem</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap');
+:root{
+  --bg:#080b0f;--bg2:#0c1018;--surface:#111520;--surface2:#181f2e;
+  --border:#1e2840;--border2:#151d30;
+  --acc:#60a5fa;--acc2:#f97316;--acc3:#f43f5e;--acc4:#34d399;--gold:#f59e0b;
+  --text:#dde4f0;--dim:#5a6a85;--dim2:#8899b0;
+  --mono:'IBM Plex Mono',monospace;--head:'Syne',sans-serif;--body:'Source Serif 4',serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.75;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:200;background:rgba(8,11,15,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);padding:0 20px;display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.tnlabel{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);padding:13px 12px 13px 0;border-right:1px solid var(--border);margin-right:6px;white-space:nowrap;flex-shrink:0}
+.tnlink{font-family:var(--mono);font-size:11px;padding:7px 13px;border-radius:5px;text-decoration:none;color:var(--dim2);white-space:nowrap;flex-shrink:0;transition:all .18s;border:1px solid transparent}
+.tnlink:hover{color:var(--text);background:var(--surface2)}
+.tnlink.active{color:var(--acc);background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.28)}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:64px 36px 56px;background:var(--bg)}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(96,165,250,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.04) 1px,transparent 1px);background-size:44px 44px;animation:gscroll 28s linear infinite}
+@keyframes gscroll{0%{transform:translateY(0)}100%{transform:translateY(44px)}}
+.hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% -5%,rgba(96,165,250,0.13) 0%,transparent 70%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);animation:fup .6s ease both}
+.edot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+@keyframes fup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.hero-title{font-family:var(--head);font-weight:800;font-size:clamp(36px,7vw,72px);line-height:1.0;color:#fff;letter-spacing:-1px;animation:fup .6s .1s ease both}
+.hero-title .grad{background:linear-gradient(135deg,#fff 30%,var(--acc) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-sub{font-size:16px;color:var(--dim2);max-width:580px;animation:fup .6s .2s ease both}
+.hero-sub strong{color:var(--text);font-weight:600}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap;animation:fup .6s .35s ease both}
+.hb{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid}
+.hb-b{color:var(--acc);border-color:rgba(96,165,250,.3);background:rgba(96,165,250,.08)}
+.hb-o{color:var(--acc2);border-color:rgba(249,115,22,.3);background:rgba(249,115,22,.08)}
+.hb-r{color:var(--acc3);border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.08)}
+.hb-g{color:var(--acc4);border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.08)}
+
+/* LAYOUT */
+.layout{display:flex;max-width:1280px;margin:0 auto}
+
+/* SIDEBAR */
+.sidebar{width:260px;min-width:260px;padding:24px 14px;border-right:1px solid var(--border);position:sticky;top:44px;height:calc(100vh - 44px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transition:transform .3s}
+.sb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sb-title{font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--acc)}
+.sb-close{display:none;background:none;border:1px solid var(--border);border-radius:4px;color:var(--dim2);cursor:pointer;padding:2px 8px;font-family:var(--mono);font-size:11px}
+.navitem{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;font-family:var(--head);font-size:13px;font-weight:600;color:var(--dim2);text-decoration:none;margin-bottom:2px;transition:all .2s;border-left:2px solid transparent}
+.navitem:hover,.navitem.active{background:var(--surface2);color:var(--text)}
+.navitem.active{color:var(--acc);border-left-color:var(--acc)}
+.nimp{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;background:var(--surface2)}
+.nimp.h{color:var(--acc3)}.nimp.m{color:var(--gold)}.nimp.l{color:var(--acc4)}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:98;backdrop-filter:blur(2px)}
+.overlay.vis{display:block}
+
+/* FAB */
+.fab{display:none;position:fixed;bottom:20px;right:20px;z-index:1000;width:50px;height:50px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;font-size:20px;color:#000;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(96,165,250,.4);transition:transform .2s}
+.fab:hover{transform:scale(1.1)}
+
+/* CONTENT */
+.content{flex:1;padding:32px 36px;max-width:calc(100% - 260px);overflow-x:hidden}
+.section{margin-bottom:60px;scroll-margin-top:60px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--acc);background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);padding:4px 8px;border-radius:4px;min-width:36px;text-align:center}
+.sec-title{font-family:var(--head);font-size:clamp(18px,3vw,22px);font-weight:800;color:#fff}
+.ipill{margin-left:auto;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px}
+
+/* THEORY */
+.theory{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:18px}
+.theory h3{font-family:var(--head);font-size:16px;font-weight:700;color:var(--acc);margin-bottom:12px}
+.theory p{margin-bottom:10px}.theory p:last-child{margin-bottom:0}
+.theory ul,.theory ol{padding-left:20px;margin:10px 0}
+.theory li{margin-bottom:6px;font-size:15px}
+h4{font-family:var(--head);font-size:15px;font-weight:700;color:var(--text);margin:16px 0 8px}
+
+/* FORMULA */
+.fbox{background:#060911;border:1px solid rgba(96,165,250,.25);border-left:3px solid var(--acc);border-radius:8px;padding:16px 20px;margin:14px 0;font-family:var(--mono);font-size:13px;overflow-x:auto}
+.fbox .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:block}
+.fbox .f{color:#a8d4ff;margin:4px 0}
+.fbox .n{color:var(--dim2);font-size:12px;margin-top:8px}
+
+/* TIPS */
+.tip{border-radius:8px;padding:15px 18px;margin:14px 0;display:flex;gap:12px}
+.tip.trick{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25)}
+.tip.note{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25)}
+.tip.link{background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.25)}
+.tip.warn{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25)}
+.ti{font-size:20px;flex-shrink:0;margin-top:2px}
+.tb{flex:1}
+.ttl{font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.tip.trick .ttl{color:var(--gold)}.tip.note .ttl{color:var(--acc4)}.tip.link .ttl{color:var(--acc)}.tip.warn .ttl{color:var(--acc3)}
+.tb p{font-size:14px;color:var(--text);margin:0}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;display:block;overflow-x:auto}
+.tbl th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:var(--head);font-weight:700;color:var(--acc);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+
+/* STEPS */
+.steps{margin:14px 0}
+.step{display:flex;gap:14px;margin-bottom:12px}
+.sn{width:28px;height:28px;min-width:28px;border-radius:50%;background:var(--acc);color:#000;font-family:var(--mono);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st{font-size:15px;padding-top:4px}
+
+/* EXAMPLE */
+.ex{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin:14px 0}
+.ex-lbl{font-family:var(--mono);font-size:10px;color:var(--acc3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+pre{background:#050810;border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:13px;color:var(--acc4);margin:12px 0;line-height:1.6}
+
+/* PYQ */
+.pyq-sec{background:#060810;border:1px solid rgba(96,165,250,.22);border-radius:10px;padding:20px 24px;margin-top:24px}
+.pyq-head{font-family:var(--head);font-size:14px;font-weight:700;color:var(--acc);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.pyq-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
+.pyq-q{font-family:var(--head);font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.pyq-meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:10px}
+.pyq-topic{font-family:var(--mono);font-size:10px;color:var(--acc);background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:10px}
+.ptog{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 14px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--acc);margin-top:8px;transition:all .2s}
+.ptog:hover{background:var(--acc);color:#000}
+.ans{display:none;margin-top:14px;font-size:14px;line-height:1.8}
+.ans.open{display:block}
+
+/* IMP BARS */
+.ibar-wrap{margin-bottom:8px}
+.ibar-lbl{font-family:var(--mono);font-size:12px;color:var(--dim2);margin-bottom:4px;display:flex;justify-content:space-between}
+.ibar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.ibar-fill{height:100%;border-radius:3px}
+.ih .ibar-fill{background:var(--acc3)}.im .ibar-fill{background:var(--gold)}.il .ibar-fill{background:var(--acc4)}
+
+/* DIAGRAM */
+.diag{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;text-align:center;overflow-x:auto}
+.diag-cap{font-family:var(--mono);font-size:11px;color:var(--dim2);margin-top:10px}
+
+.hl{color:var(--acc);font-weight:600}.hl-o{color:var(--acc2)}.hl-g{color:var(--acc4)}.hl-r{color:var(--acc3)}
+.divider{border:none;border-top:1px solid var(--border);margin:30px 0}
+
+@media(max-width:768px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:99;background:var(--bg);transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.8)}
+  .sb-close{display:block}.fab{display:flex}
+  .content{max-width:100%;padding:20px 16px}.hero{padding:48px 20px 44px}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:8px}.ipill{margin-left:0}
+}
+@media(min-width:769px){.fab{display:none!important}.overlay{display:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="tnlabel">ML · RTU</span>
+  <a class="tnlink" href="ml_index.html">🏠 Home</a>
+  <a class="tnlink" href="ml_unit2.html">📊 Unit 2</a>
+  <a class="tnlink" href="ml_unit3.html">🔵 Unit 3</a>
+  <a class="tnlink" href="ml_unit4.html">📐 Unit 4</a>
+  <a class="tnlink active" href="ml_unit5.html">🤖 Unit 5</a>
+  <a class="tnlink" href="ml_pyqs.html">📝 Solved PYQs</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="edot"></span>ML · Unit 5 · 6E7102 / 6AI4-02</div>
+    <h1 class="hero-title">Reinforcement<br><span class="grad">Learning</span></h1>
+    <p class="hero-sub">Semi-supervised learning, MDP, Bellman Equations, Monte Carlo, Policy & Value Iteration, <strong>Q-Learning, SARSA</strong> — fully solved with RTU PYQs 2022–2025.</p>
+    <div class="hero-badges">
+      <span class="hb hb-r">🔥 Very High Priority</span>
+      <span class="hb hb-b">🤖 RL from Scratch</span>
+      <span class="hb hb-o">📐 Bellman Formulas</span>
+      <span class="hb hb-g">✅ All PYQs Solved</span>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+<div class="layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="sb-title">Topics</span>
+    <button class="sb-close" onclick="closeSB()">✕ Close</button>
+  </div>
+  <a class="navitem active" href="#overview" onclick="closeSB()">📊 Importance Overview</a>
+  <a class="navitem" href="#semi" onclick="closeSB()">🔀 Semi-Supervised Learning<span class="nimp m">70%</span></a>
+  <a class="navitem" href="#rl-intro" onclick="closeSB()">🤖 What is RL?<span class="nimp h">85%</span></a>
+  <a class="navitem" href="#mdp" onclick="closeSB()">🗺️ Markov Decision Process<span class="nimp h">95%</span></a>
+  <a class="navitem" href="#bellman" onclick="closeSB()">⚡ Bellman Equations<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#montecarlo" onclick="closeSB()">🎲 Monte Carlo Policy Eval<span class="nimp h">85%</span></a>
+  <a class="navitem" href="#policy-value" onclick="closeSB()">🔄 Policy & Value Iteration<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#qlearning" onclick="closeSB()">🎯 Q-Learning<span class="nimp h">95%</span></a>
+  <a class="navitem" href="#sarsa" onclick="closeSB()">🔁 SARSA<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#model-based" onclick="closeSB()">🏗️ Model-Based RL<span class="nimp m">75%</span></a>
+  <a class="navitem" href="#pyqs" onclick="closeSB()">📝 All PYQs</a>
+</nav>
+
+<main class="content">
+
+<!-- ═══════════════ OVERVIEW ═══════════════ -->
+<section class="section" id="overview">
+  <div class="sec-head">
+    <span class="sec-num">00</span>
+    <h2 class="sec-title">Topic Importance Analysis</h2>
+  </div>
+  <div class="theory">
+    <p>Unit 5 is the <strong>highest-weight unit</strong> in RTU ML papers. RL questions appear in ALL four years across Part A, B, and C. Master MDP + Bellman + Q-Learning + SARSA and you can score 25–30 marks from this unit alone.</p>
+    <div class="ibar-wrap ih" style="margin-top:16px"><div class="ibar-lbl"><span>MDP + Markov Property</span><span style="color:var(--acc3)">95%</span></div><div class="ibar"><div class="ibar-fill" style="width:95%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Q-Learning Algorithm</span><span style="color:var(--acc3)">95%</span></div><div class="ibar"><div class="ibar-fill" style="width:95%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Bellman Equations</span><span style="color:var(--acc3)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>SARSA vs Q-Learning</span><span style="color:var(--acc3)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Policy & Value Iteration</span><span style="color:var(--acc3)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Monte Carlo Policy Evaluation</span><span style="color:var(--gold)">85%</span></div><div class="ibar"><div class="ibar-fill" style="width:85%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Model-Based RL</span><span style="color:var(--gold)">75%</span></div><div class="ibar"><div class="ibar-fill" style="width:75%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Semi-Supervised Learning</span><span style="color:var(--gold)">70%</span></div><div class="ibar"><div class="ibar-fill" style="width:70%"></div></div></div>
+  </div>
+  <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Exam Strategy</div><p>For every RL question in Part C: Write Definition → Mathematical formula (boxed) → Algorithm steps → Diagram → Example → Compare with related algorithm. RTU loves <strong>comparison questions</strong> (Q-Learning vs SARSA, Policy vs Value Iteration, On-policy vs Off-policy). Prepare a 5-row comparison table for each pair — it alone fills half a page and earns full marks.</p></div></div>
+</section>
+
+<!-- ═══════════════ SEMI-SUPERVISED ═══════════════ -->
+<section class="section" id="semi">
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <h2 class="sec-title">Semi-Supervised Learning</h2>
+    <span class="ipill hb hb-o">70% · Part A/B</span>
+  </div>
+  <div class="theory">
+    <h3>What is Semi-Supervised Learning?</h3>
+    <p>In the real world, labelling data is expensive and time-consuming. <span class="hl">Semi-supervised learning (SSL)</span> sits between supervised learning (all data labelled) and unsupervised learning (no labels). It uses a <strong>small amount of labelled data</strong> combined with a <strong>large amount of unlabelled data</strong> for training.</p>
+    <p><strong>Intuition:</strong> Imagine you're a teacher. You have 10 answered exam papers (labelled) and 1000 blank papers (unlabelled). SSL uses the patterns from those 1000 blank papers to improve learning from just the 10.</p>
+    <div class="diag">
+      <svg viewBox="0 0 580 100" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="20" width="120" height="60" rx="6" fill="#1a2035" stroke="#f97316" stroke-width="1.5"/>
+        <text x="70" y="48" text-anchor="middle" fill="#f97316" font-family="IBM Plex Mono" font-size="10">Supervised</text>
+        <text x="70" y="63" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">100% labelled</text>
+        <text x="70" y="75" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Small dataset</text>
+        <rect x="220" y="10" width="140" height="80" rx="6" fill="#1a2035" stroke="#60a5fa" stroke-width="2"/>
+        <text x="290" y="42" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="10">Semi-Supervised</text>
+        <text x="290" y="58" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Few labelled +</text>
+        <text x="290" y="72" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Many unlabelled</text>
+        <rect x="450" y="20" width="120" height="60" rx="6" fill="#1a2035" stroke="#34d399" stroke-width="1.5"/>
+        <text x="510" y="48" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="10">Unsupervised</text>
+        <text x="510" y="63" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">0% labelled</text>
+        <text x="510" y="75" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Patterns only</text>
+      </svg>
+      <div class="diag-cap">Fig 1.1 — Semi-supervised sits between supervised and unsupervised learning</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Key Assumptions (Why SSL Works)</h3>
+    <ul>
+      <li><span class="hl">Smoothness Assumption:</span> If two points are close in the input space, their labels should be similar. Unlabelled data helps identify the "smooth" regions.</li>
+      <li><span class="hl">Cluster Assumption:</span> Data forms natural clusters. Points in the same cluster likely share the same label. Unlabelled data reveals cluster structure.</li>
+      <li><span class="hl">Manifold Assumption:</span> High-dimensional data lies on a low-dimensional manifold. Unlabelled data helps map this manifold accurately.</li>
+    </ul>
+    <h4>Approaches to SSL</h4>
+    <ul>
+      <li><strong>Self-Training:</strong> Train on labelled data → predict labels for unlabelled data → add high-confidence predictions to training set → retrain. Repeat.</li>
+      <li><strong>Co-Training:</strong> Train two classifiers on different feature views of the same data. Each classifier labels data for the other.</li>
+      <li><strong>Graph-Based Methods:</strong> Build a graph where nodes = data points, edges = similarity. Propagate labels from labelled nodes to unlabelled nodes.</li>
+      <li><strong>Generative Models:</strong> Learn distribution P(x) from unlabelled data, then use P(x|class) for classification.</li>
+    </ul>
+    <h4>Advantages</h4>
+    <ul>
+      <li>Reduces labelling cost significantly (crucial for medical images, legal documents)</li>
+      <li>Better generalization than supervised-only on small labelled datasets</li>
+      <li>Exploits the large amounts of cheap unlabelled data available on the internet</li>
+    </ul>
+  </div>
+  <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection to Unit 2 & 3</div><p>SSL connects supervised learning (Unit 2 — labelled data, Decision Trees, SVM) with unsupervised learning (Unit 3 — K-means clustering, GMM). The "cluster assumption" of SSL directly uses K-means clustering to discover structure in unlabelled data. Think of SSL as: clustering (Unit 3) + classification (Unit 2) combined smartly.</p></div></div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Semi-Supervised Learning</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. In outlier detection by semi-supervised learning, what is the advantage of using objects without labels in the training data set?</div>
+      <div class="pyq-meta">June 2022 · Part A Q7 · 2 marks</div>
+      <div class="pyq-topic">Topic: Semi-Supervised Learning · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">Unlabelled data helps the model learn the <strong>natural boundary/distribution</strong> of normal data. In outlier detection, having many unlabelled "normal" examples allows the model to precisely model the normal region. Any point far from this region — even unlabelled — is flagged as an outlier. This dramatically reduces the need for expensive labelled anomaly examples, since anomalies are rare and hard to collect labelled examples of.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ RL INTRO ═══════════════ -->
+<section class="section" id="rl-intro">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <h2 class="sec-title">What is Reinforcement Learning?</h2>
+    <span class="ipill hb hb-r">85% · Foundation</span>
+  </div>
+  <div class="theory">
+    <h3>The Core Idea</h3>
+    <p><span class="hl">Reinforcement Learning (RL)</span> is a type of machine learning where an <strong>agent</strong> learns to make decisions by <strong>interacting with an environment</strong> to maximize cumulative <strong>reward</strong>. There is no teacher telling the agent what to do — it learns purely from trial and error.</p>
+    <p><strong>Real-life analogy:</strong> A child learning to walk. No one gives the child a manual. The child tries, falls (negative reward), adjusts, tries again, and eventually learns to balance (positive reward). The child is the agent; the floor is the environment.</p>
+    <div class="diag">
+      <svg viewBox="0 0 600 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect x="50" y="40" width="120" height="70" rx="8" fill="#1a2035" stroke="#60a5fa" stroke-width="2"/>
+        <text x="110" y="72" text-anchor="middle" fill="#60a5fa" font-family="Syne" font-size="14" font-weight="700">AGENT</text>
+        <text x="110" y="90" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">Brain/Policy</text>
+        <rect x="430" y="40" width="120" height="70" rx="8" fill="#1a2035" stroke="#f97316" stroke-width="2"/>
+        <text x="490" y="72" text-anchor="middle" fill="#f97316" font-family="Syne" font-size="14" font-weight="700">ENV</text>
+        <text x="490" y="90" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">World</text>
+        <!-- Action arrow top -->
+        <path d="M 170,62 Q 300,20 430,62" stroke="#60a5fa" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+        <text x="300" y="30" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="11">Action aₜ</text>
+        <!-- State+reward arrow bottom -->
+        <path d="M 430,88 Q 300,130 170,88" stroke="#f97316" stroke-width="2" fill="none" marker-end="url(#arr2)"/>
+        <text x="300" y="148" text-anchor="middle" fill="#f97316" font-family="IBM Plex Mono" font-size="11">State sₜ₊₁, Reward rₜ₊₁</text>
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#60a5fa"/></marker>
+          <marker id="arr2" markerWidth="8" markerHeight="6" refX="2" refY="3" orient="auto"><polygon points="8 0,0 3,8 6" fill="#f97316"/></marker>
+        </defs>
+      </svg>
+      <div class="diag-cap">Fig 2.1 — RL agent-environment loop: agent takes action → gets state and reward</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Key Components of RL (Must Know)</h3>
+    <table class="tbl">
+      <tr><th>Component</th><th>Definition</th><th>Example (Chess)</th></tr>
+      <tr><td><span class="hl">Agent</span></td><td>The learner/decision-maker</td><td>The chess program</td></tr>
+      <tr><td><span class="hl">Environment</span></td><td>Everything the agent interacts with</td><td>The chess board</td></tr>
+      <tr><td><span class="hl">State (s)</span></td><td>Current situation description</td><td>Current board configuration</td></tr>
+      <tr><td><span class="hl">Action (a)</span></td><td>Choice the agent can make</td><td>Moving a piece</td></tr>
+      <tr><td><span class="hl">Reward (r)</span></td><td>Feedback signal (+ve or -ve)</td><td>+1 for winning, -1 for losing</td></tr>
+      <tr><td><span class="hl">Policy (π)</span></td><td>Strategy: what action to take in each state</td><td>The playing strategy</td></tr>
+      <tr><td><span class="hl">Value (V)</span></td><td>Expected future reward from a state</td><td>How "good" a board position is</td></tr>
+      <tr><td><span class="hl">Q-value</span></td><td>Expected future reward for a state-action pair</td><td>How good is it to move bishop here?</td></tr>
+    </table>
+    <h4>RL vs Supervised vs Unsupervised (2-mark answer)</h4>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Supervised</th><th>Unsupervised</th><th>Reinforcement</th></tr>
+      <tr><td>Input</td><td>Labelled examples (x,y)</td><td>Unlabelled data x</td><td>State, action, reward</td></tr>
+      <tr><td>Feedback</td><td>Correct answer given</td><td>No feedback</td><td>Reward (delayed)</td></tr>
+      <tr><td>Goal</td><td>Learn mapping x→y</td><td>Find structure</td><td>Maximize reward</td></tr>
+      <tr><td>Example</td><td>Email spam filter</td><td>Customer clustering</td><td>Game-playing AI</td></tr>
+    </table>
+  </div>
+  <div class="tip note"><div class="ti">✅</div><div class="tb"><div class="ttl">The 3 key types of RL problems</div><p><strong>Model-Free RL</strong>: Agent doesn't know how environment works; learns by trial. (Q-Learning, SARSA)<br><strong>Model-Based RL</strong>: Agent builds a model of environment; plans ahead. (Dyna-Q)<br><strong>Policy-Based</strong>: Directly optimize policy. <strong>Value-Based</strong>: Find value function, derive policy from it. RTU asks model-free vs model-based frequently.</p></div></div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — RL Introduction</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Compare Reinforced Learning and Supervised Learning.</div>
+      <div class="pyq-meta">Aug 2023 · Part A Q7 · 2 marks</div>
+      <div class="pyq-topic">Topic: RL vs Supervised · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Supervised Learning:</strong> Learns from labelled examples (input-output pairs). A teacher provides the correct answer. Goal: map inputs to outputs. Example: classifying emails.<br><br>
+        <strong>Reinforcement Learning:</strong> Learns through trial-and-error interaction with environment. No teacher — only a reward signal. Goal: maximize cumulative reward. Example: training a robot to walk.<br><br>
+        Key Difference: In SL, feedback is immediate and correct (teacher tells you). In RL, feedback is delayed and only tells you if outcome was good or bad (not what the correct action was).
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Is reinforcement learning an appropriate abstract model for evolution? Why or why not?</div>
+      <div class="pyq-meta">June 2022 · Part A Q8 · 2 marks</div>
+      <div class="pyq-topic">Topic: RL Concepts · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Yes, RL is an appropriate abstract model for evolution.</strong><br><br>
+        <strong>Similarities:</strong><br>
+        • In evolution, organisms "act" (survive/reproduce or not) — this parallels the agent taking actions.<br>
+        • Natural selection provides a "reward" signal — organisms that survive better have higher fitness.<br>
+        • Evolution explores different genetic variants (like RL's exploration) to find better solutions.<br><br>
+        <strong>Differences/Limitations:</strong><br>
+        • Evolution operates on populations; RL on a single agent.<br>
+        • Evolution has no memory/value function — changes happen over generations.<br>
+        • Time scales are very different (evolution = millions of years; RL = episodes).<br><br>
+        Conclusion: RL captures the <em>essence</em> of evolution (trial-and-error, selection by reward) but is a simplified model.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MDP ═══════════════ -->
+<section class="section" id="mdp">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <h2 class="sec-title">Markov Decision Process (MDP)</h2>
+    <span class="ipill hb hb-r">🔥 95% — Most Important</span>
+  </div>
+  <div class="theory">
+    <h3>What is MDP?</h3>
+    <p>A <span class="hl">Markov Decision Process</span> is the mathematical framework that formalizes the RL problem. It provides a structured way to model decision-making in situations where outcomes are partly random and partly under the control of an agent.</p>
+    <p><strong>The word "Markov"</strong> means the future depends only on the present state, NOT the history of past states. This is the <strong>Markov Property</strong>.</p>
+    <div class="fbox">
+      <span class="lbl">Markov Property (Most Important!)</span>
+      <div class="f">P(sₜ₊₁ | sₜ, aₜ, sₜ₋₁, aₜ₋₁, ...) = P(sₜ₊₁ | sₜ, aₜ)</div>
+      <div class="n">The next state depends ONLY on the current state and action. The past doesn't matter. This is called "memoryless" property.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>MDP — Formal Definition (5-Tuple)</h3>
+    <p>An MDP is defined by a <strong>5-tuple: (S, A, P, R, γ)</strong></p>
+    <table class="tbl">
+      <tr><th>Symbol</th><th>Name</th><th>Definition</th></tr>
+      <tr><td><strong>S</strong></td><td>State Space</td><td>Set of all possible states</td></tr>
+      <tr><td><strong>A</strong></td><td>Action Space</td><td>Set of all possible actions</td></tr>
+      <tr><td><strong>P(s'|s,a)</strong></td><td>Transition Probability</td><td>Probability of reaching state s' from s by taking action a</td></tr>
+      <tr><td><strong>R(s,a,s')</strong></td><td>Reward Function</td><td>Immediate reward received after transitioning from s to s' via a</td></tr>
+      <tr><td><strong>γ</strong></td><td>Discount Factor</td><td>γ ∈ [0,1]. How much future rewards are worth now</td></tr>
+    </table>
+    <div class="fbox">
+      <span class="lbl">Return (Total Discounted Reward)</span>
+      <div class="f">Gₜ = rₜ₊₁ + γ·rₜ₊₂ + γ²·rₜ₊₃ + ... = Σₖ₌₀^∞ γᵏ · rₜ₊ₖ₊₁</div>
+      <div class="n">γ=0: only care about immediate reward. γ=1: care equally about all future rewards. Typical γ = 0.9</div>
+    </div>
+    <div class="tip trick"><div class="ti">🧠</div><div class="tb"><div class="ttl">Memory Trick — Discount Factor γ</div><p>Think of γ as inflation. ₹1 today ≠ ₹1 next year. With γ=0.9, a reward of 10 earned 2 steps later is worth 0.9² × 10 = 8.1 today. The further in the future, the less it's worth NOW. This prevents the agent from chasing infinitely long reward sequences.</p></div></div>
+  </div>
+  <div class="theory">
+    <h3>Policy and Value Function</h3>
+    <p>A <span class="hl">policy π</span> is a rule that tells the agent what action to take in each state. It can be deterministic (π(s) = a) or stochastic (π(a|s) = probability).</p>
+    <div class="fbox">
+      <span class="lbl">State Value Function V^π(s)</span>
+      <div class="f">V^π(s) = E_π[Gₜ | Sₜ = s] = E_π[Σₖ₌₀^∞ γᵏ · rₜ₊ₖ₊₁ | Sₜ = s]</div>
+      <div class="n">Expected total discounted reward starting from state s and following policy π</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Action Value Function Q^π(s,a)</span>
+      <div class="f">Q^π(s,a) = E_π[Gₜ | Sₜ = s, Aₜ = a]</div>
+      <div class="n">Expected total discounted reward starting from state s, taking action a, then following policy π</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>RTU Example — Grid World MDP</h3>
+    <p>A classic MDP example: A robot on a 3×3 grid. Goal: reach top-right corner (reward +10). Falling in pit = reward -5. Each move = -1 reward.</p>
+    <div class="ex">
+      <div class="ex-lbl">📌 Grid World MDP Setup</div>
+      <pre>
+┌─────┬─────┬─────┐
+│     │     │ +10 │   ← Goal state (terminal)
+├─────┼─────┼─────┤
+│     │ PIT │     │   ← Pit = -5 (terminal)
+├─────┼─────┼─────┤
+│ S   │     │     │   ← S = Start state
+└─────┴─────┴─────┘
+
+States: S = {(1,1),(1,2),...,(3,3)} = 9 states
+Actions: A = {Up, Down, Left, Right}
+Rewards: R = +10 at goal, -5 at pit, -1 otherwise
+γ = 0.9
+</pre>
+      <p>The agent must find the <strong>optimal policy</strong> π* that navigates from S to Goal while avoiding the Pit.</p>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Optimal Policy — What it Means</h3>
+    <p>An <span class="hl">optimal policy</span> π* is the policy that maximises the value function for ALL states:</p>
+    <div class="fbox">
+      <div class="f">π*(s) = argmax_a Q*(s,a) for all s ∈ S</div>
+      <div class="n">π* is found when the value function converges (no more change). Guaranteed to exist for finite MDPs.</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — MDP</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is Markov Property? Express it mathematically.</div>
+      <div class="pyq-meta">2024 · Part A Q9 · 2 marks</div>
+      <div class="pyq-topic">Topic: Markov Property · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Markov Property</strong> states that the future is independent of the past given the present. In other words, the next state depends only on the current state and action, not on the history of how the agent arrived at the current state.<br><br>
+        <strong>Mathematically:</strong><br>
+        P(Sₜ₊₁ = s' | Sₜ = s, Aₜ = a, Sₜ₋₁ = s_{t-1}, ...) = P(Sₜ₊₁ = s' | Sₜ = s, Aₜ = a)<br><br>
+        <strong>Example:</strong> In chess, the current board position contains all the information needed to decide the next move. The history of how pieces moved to their current positions doesn't change what moves are possible or optimal now.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What do you mean by optimal policy in an MDP environment? How do we find an optimal policy? Give example.</div>
+      <div class="pyq-meta">2024 · Part B Q3 · 4 marks</div>
+      <div class="pyq-topic">Topic: MDP, Optimal Policy · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Optimal Policy:</strong><br>
+        A policy π* is optimal if it achieves the maximum expected return from every state:<br>
+        V*(s) ≥ V^π(s) for all policies π and all states s<br><br>
+        The optimal policy is derived from the optimal Q-function: π*(s) = argmax_a Q*(s,a)<br><br>
+        <strong>How to Find Optimal Policy:</strong><br>
+        Three main methods:<br>
+        1. <strong>Policy Iteration:</strong> Start with any policy → Evaluate it (compute V^π) → Improve it (act greedily) → Repeat until convergence<br>
+        2. <strong>Value Iteration:</strong> Repeatedly apply Bellman optimality equation until V converges → Extract policy<br>
+        3. <strong>Q-Learning:</strong> Model-free; directly learn Q*(s,a) from interaction<br><br>
+        <strong>Example (Grid World):</strong><br>
+        Start state (1,1), Goal state (3,3). The optimal policy might be:<br>
+        π*(1,1)=Right, π*(1,2)=Right, π*(2,1)=Up, π*(2,2)=Up...<br>
+        This policy maximizes the sum of discounted rewards to reach the goal.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Illustrate Markov Decision Problem in reinforcement learning with the help of an example.</div>
+      <div class="pyq-meta">Aug 2023 · Part C Q3 · 15 marks</div>
+      <div class="pyq-topic">Topic: MDP · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Markov Decision Process (MDP) — Full Explanation</strong><br><br>
+        <strong>Definition:</strong> An MDP is a mathematical framework for sequential decision-making where outcomes are partly under the agent's control and partly random. It satisfies the Markov property.<br><br>
+        <strong>Formal Definition (5-tuple):</strong><br>
+        MDP = (S, A, P, R, γ) where:<br>
+        • S = State space, A = Action space<br>
+        • P(s'|s,a) = Transition probability<br>
+        • R(s,a,s') = Reward function<br>
+        • γ = Discount factor ∈ [0,1]<br><br>
+        <strong>Markov Property:</strong> P(sₜ₊₁|sₜ,aₜ,sₜ₋₁,...) = P(sₜ₊₁|sₜ,aₜ)<br><br>
+        <strong>Value Function:</strong> V^π(s) = E_π[Σγᵏrₜ₊ₖ₊₁ | Sₜ=s]<br><br>
+        <strong>Illustrated Example — Student MDP:</strong><br>
+        States: {Facebook, Study, Sleep, Pub, Pass}<br>
+        Actions from Study: {Study more, Go Pub, Take break}<br>
+        Rewards: Pass=+10, Facebook=-1, Pub=-2, Study=−2<br>
+        γ = 0.9<br><br>
+        [Draw state transition diagram with probabilities on arrows]<br><br>
+        The agent (student) starts in some state. Each action leads to a new state with some probability and immediate reward. The goal is to find policy π* that maximizes the expected discounted total reward (i.e., maximize probability of Passing).
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ BELLMAN ═══════════════ -->
+<section class="section" id="bellman">
+  <div class="sec-head">
+    <span class="sec-num">04</span>
+    <h2 class="sec-title">Bellman Equations</h2>
+    <span class="ipill hb hb-r">🔥 90% — Must Memorize</span>
+  </div>
+  <div class="theory">
+    <h3>Core Idea: Recursion is the Key</h3>
+    <p>The <span class="hl">Bellman Equation</span> expresses the value of a state as the immediate reward PLUS the discounted value of the next state. This recursive structure is the foundation of all RL algorithms.</p>
+    <p><strong>Intuition:</strong> The value of being in a hotel room = (comfort tonight) + γ × (value of tomorrow's destination you'll travel to from here).</p>
+  </div>
+  <div class="theory">
+    <h3>Bellman Expectation Equation (For a Policy π)</h3>
+    <div class="fbox">
+      <span class="lbl">Bellman Expectation — State Value</span>
+      <div class="f">V^π(s) = Σₐ π(a|s) Σ_{s'} P(s'|s,a) [R(s,a,s') + γ·V^π(s')]</div>
+      <div class="n">For deterministic policy π: V^π(s) = Σ_{s'} P(s'|s,π(s)) [R + γV^π(s')]</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Bellman Expectation — Action Value</span>
+      <div class="f">Q^π(s,a) = Σ_{s'} P(s'|s,a) [R(s,a,s') + γ Σ_{a'} π(a'|s') Q^π(s',a')]</div>
+    </div>
+    <h4>Relationship between V and Q</h4>
+    <div class="fbox">
+      <div class="f">V^π(s) = Σₐ π(a|s) · Q^π(s,a)</div>
+      <div class="f" style="margin-top:6px">Q^π(s,a) = R(s,a) + γ Σ_{s'} P(s'|s,a) V^π(s')</div>
+      <div class="n">V = weighted sum of Q values. Q = immediate reward + discounted V of next state.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>⭐ Bellman Optimality Equation (The Golden Formula)</h3>
+    <p>The optimal value function V* satisfies the <span class="hl">Bellman Optimality Equation</span> — it tells you the best you can possibly do from any state:</p>
+    <div class="fbox">
+      <span class="lbl">Bellman Optimality — State Value V*</span>
+      <div class="f">V*(s) = max_a Σ_{s'} P(s'|s,a) [R(s,a,s') + γ·V*(s')]</div>
+      <div class="n">V* is the maximum V possible. The "max" replaces the weighted sum over policy.</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">Bellman Optimality — Action Value Q*</span>
+      <div class="f">Q*(s,a) = Σ_{s'} P(s'|s,a) [R(s,a,s') + γ·max_{a'} Q*(s',a')]</div>
+      <div class="n">This is the Q-Learning update target! Q-Learning directly approximates Q* using this equation.</div>
+    </div>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Memory Trick — Bellman vs Q-Learning</div><p>Bellman Optimality Equation IS Q-Learning conceptually. In Q-Learning, the update rule is:<br>
+    Q(s,a) ← Q(s,a) + α[r + γ·max_{a'} Q(s',a') − Q(s,a)]<br>
+    The bracketed term is <strong>TD Error</strong> = actual − predicted. The target r + γ·max Q(s',a') IS the Bellman equation. Always write this in your answer!</p></div></div>
+  </div>
+  <div class="theory">
+    <h3>Markov Reward Process (MRP) — 2024 Part A Q10</h3>
+    <p>An <span class="hl">MRP</span> is an MDP with no actions — just states, transitions, and rewards. It models stochastic environments where the agent has no control.</p>
+    <div class="fbox">
+      <span class="lbl">MRP Bellman Equation</span>
+      <div class="f">V(s) = R(s) + γ · Σ_{s'} P(s'|s) · V(s')</div>
+      <div class="n">No action term since MRP has no decisions. MDP = MRP + Actions.</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Bellman Equations</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Give your intuition about: (a) Markov Reward Process (MRP) (b) Bellman Equation</div>
+      <div class="pyq-meta">2024 · Part A Q10 · 2 marks</div>
+      <div class="pyq-topic">Topic: MRP, Bellman Equation · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>(a) Markov Reward Process (MRP):</strong><br>
+        An MRP is a tuple (S, P, R, γ) — a Markov chain (random walk through states) augmented with a reward signal. The agent receives rewards R(s) in each state and transitions to next states with probability P(s'|s). There are no actions — the process is fully stochastic. It models environments without decision-making. The value V(s) = R(s) + γΣP(s'|s)V(s').<br><br>
+        <strong>(b) Bellman Equation:</strong><br>
+        The Bellman equation expresses the recursive relationship: the value of a state equals the immediate reward plus the discounted value of successor states.<br>
+        V*(s) = max_a Σ_{s'} P(s'|s,a)[R + γV*(s')]<br>
+        Intuition: "The value of where I am = what I get now + discounted value of where I'll end up." It breaks the complex future into manageable recursive steps.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MONTE CARLO ═══════════════ -->
+<section class="section" id="montecarlo">
+  <div class="sec-head">
+    <span class="sec-num">05</span>
+    <h2 class="sec-title">Policy Evaluation — Monte Carlo</h2>
+    <span class="ipill hb hb-r">85% · Part B</span>
+  </div>
+  <div class="theory">
+    <h3>What is Monte Carlo in RL?</h3>
+    <p><span class="hl">Monte Carlo (MC) methods</span> learn from <strong>complete episodes</strong> of experience. Instead of using Bellman equations (which require a model), MC estimates value functions by averaging the actual returns observed from real or simulated episodes.</p>
+    <p><strong>Key idea:</strong> Play out an entire episode from start to finish. Calculate the actual total return G at the end. Update the value function using this actual return. Repeat many times → average converges to true value.</p>
+    <div class="fbox">
+      <span class="lbl">Monte Carlo Value Update</span>
+      <div class="f">V(s) ← V(s) + α · [G_t − V(s)]</div>
+      <div class="n">G_t = actual return from episode. α = learning rate. After many episodes, V(s) converges to V^π(s)</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Monte Carlo Policy Evaluation — Algorithm Steps</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st">Initialize V(s) = 0 for all states, empty returns list Returns(s) = [] for all s.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st">Generate a complete episode following policy π: s₀, a₀, r₁, s₁, a₁, r₂, ..., sₙ (terminal).</div></div>
+      <div class="step"><div class="sn">3</div><div class="st">Calculate return G for each timestep: G_t = r_{t+1} + γ·r_{t+2} + γ²·r_{t+3} + ...</div></div>
+      <div class="step"><div class="sn">4</div><div class="st">For each state s appearing in the episode: append G_t to Returns(s). Update V(s) = mean(Returns(s)).</div></div>
+      <div class="step"><div class="sn">5</div><div class="st">Repeat from Step 2 for many episodes until V converges.</div></div>
+    </div>
+    <h4>First-Visit vs Every-Visit MC</h4>
+    <table class="tbl">
+      <tr><th>Type</th><th>When to Update</th><th>Bias</th></tr>
+      <tr><td><strong>First-Visit MC</strong></td><td>Only on first occurrence of s in episode</td><td>Unbiased</td></tr>
+      <tr><td><strong>Every-Visit MC</strong></td><td>Every time s appears in episode</td><td>Slightly biased</td></tr>
+    </table>
+    <h4>Comparison: MC vs Dynamic Programming vs TD</h4>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Dynamic Programming</th><th>Monte Carlo</th><th>TD Learning</th></tr>
+      <tr><td>Requires model?</td><td>Yes (P,R needed)</td><td>No</td><td>No</td></tr>
+      <tr><td>Uses full episodes?</td><td>No (one step)</td><td>Yes (complete)</td><td>No (one step)</td></tr>
+      <tr><td>Bootstrapping?</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+      <tr><td>Bias</td><td>Zero (if model correct)</td><td>Zero (unbiased)</td><td>Some bias</td></tr>
+      <tr><td>Variance</td><td>Low</td><td>High (full episodes)</td><td>Lower than MC</td></tr>
+      <tr><td>Example</td><td>Policy/Value iteration</td><td>Blackjack, games</td><td>Q-Learning, SARSA</td></tr>
+    </table>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Key Difference to Remember</div><p>DP = needs model (knows P). MC = model-free but needs complete episodes (can't do with continuing tasks). TD = model-free AND works online (updates after every step). This is why TD (Q-Learning, SARSA) is the most practical for real RL problems.</p></div></div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Monte Carlo</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. List the important steps of policy evaluation using Monte Carlo.</div>
+      <div class="pyq-meta">2024 · Part B Q1 · 4 marks</div>
+      <div class="pyq-topic">Topic: Monte Carlo Policy Evaluation · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Policy Evaluation using Monte Carlo — Steps:</strong><br><br>
+        Monte Carlo policy evaluation estimates V^π(s) — the value of each state under policy π — by averaging observed returns from complete episodes.<br><br>
+        <strong>Algorithm:</strong><br>
+        Input: Policy π to evaluate<br>
+        Initialize: V(s) = 0 ∀s; Returns(s) = {} ∀s<br><br>
+        Step 1: Generate episode using π: {s₀, a₀, r₁, s₁, a₁, r₂, ..., s_{T-1}, a_{T-1}, r_T}<br>
+        Step 2: G ← 0<br>
+        Step 3: For t = T-1 downto 0:<br>
+        &nbsp;&nbsp;G ← γG + r_{t+1} (compute return backwards)<br>
+        &nbsp;&nbsp;If sₜ not in {s₀,...,s_{t-1}} (first-visit):<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Append G to Returns(sₜ)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;V(sₜ) ← mean(Returns(sₜ))<br>
+        Step 4: Repeat from Step 1 for many episodes<br>
+        Step 5: Return V(s) for all s<br><br>
+        <strong>Key Point:</strong> Since G is calculated from complete episodes (actual returns), MC is unbiased but has high variance. It does not require knowledge of transition probabilities P(s'|s,a).
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Write the differences among dynamic programming, Monte Carlo, and temporal methods of RL. How is policy evaluation performed in Monte Carlo?</div>
+      <div class="pyq-meta">June 2022 · Part B Q5a · 4 marks</div>
+      <div class="pyq-topic">Topic: DP vs MC vs TD · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        (Refer to the DP vs MC vs TD comparison table in the theory section above.)<br><br>
+        <strong>MC Policy Evaluation Summary:</strong><br>
+        MC estimates V^π(s) = E[G_t | S_t = s] by sampling complete episodes and computing actual returns. After many episodes, sample mean → true expected return by Law of Large Numbers.<br>
+        Update: V(s) ← V(s) + α[G_t − V(s)]<br>
+        where G_t = r_{t+1} + γr_{t+2} + γ²r_{t+3} + ... is the actual return from time t.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ POLICY & VALUE ITERATION ═══════════════ -->
+<section class="section" id="policy-value">
+  <div class="sec-head">
+    <span class="sec-num">06</span>
+    <h2 class="sec-title">Policy Iteration &amp; Value Iteration</h2>
+    <span class="ipill hb hb-r">🔥 90% · Part B/C</span>
+  </div>
+  <div class="theory">
+    <h3>Policy Iteration</h3>
+    <p><span class="hl">Policy Iteration</span> finds the optimal policy by alternating between two steps: Policy Evaluation (how good is current policy?) and Policy Improvement (can we do better?).</p>
+    <div class="diag">
+      <svg viewBox="0 0 500 90" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="20" width="150" height="50" rx="6" fill="#1a2035" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="105" y="43" text-anchor="middle" fill="#60a5fa" font-family="Syne" font-size="12" font-weight="700">Policy Evaluation</text>
+        <text x="105" y="60" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">Compute V^π(s)</text>
+        <polygon points="185,45 215,38 215,52" fill="#34d399"/>
+        <rect x="220" y="20" width="150" height="50" rx="6" fill="#1a2035" stroke="#f97316" stroke-width="1.5"/>
+        <text x="295" y="43" text-anchor="middle" fill="#f97316" font-family="Syne" font-size="12" font-weight="700">Policy Improvement</text>
+        <text x="295" y="60" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="10">π(s) ← argmax_a Q(s,a)</text>
+        <polygon points="375,45 400,38 400,52" fill="#34d399"/>
+        <rect x="405" y="25" width="80" height="40" rx="6" fill="#1a2035" stroke="#34d399" stroke-width="1.5"/>
+        <text x="445" y="49" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="10">Converged?</text>
+        <path d="M445,65 Q445,85 300,85 Q150,85 105,70" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-dasharray="4,3"/>
+        <polygon points="105,70 98,65 112,65" fill="#f59e0b"/>
+        <text x="295" y="83" text-anchor="middle" fill="#f59e0b" font-family="IBM Plex Mono" font-size="9">No → repeat</text>
+      </svg>
+      <div class="diag-cap">Fig 6.1 — Policy Iteration: evaluate → improve → repeat until optimal</div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Initialize:</strong> Start with any policy π₀ (e.g., random).</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Policy Evaluation:</strong> For current policy π, solve Bellman equation iteratively to compute V^π(s) for all s. Repeat until convergence: V^π(s) ← Σ_{s'} P(s'|s,π(s)) [R + γV^π(s')]</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Policy Improvement:</strong> For each state, find the greedy action: π'(s) ← argmax_a Σ_{s'} P(s'|s,a)[R + γV^π(s')]</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Check convergence:</strong> If π' = π (policy unchanged), stop — we have found π*. Otherwise, set π ← π' and go to Step 2.</div></div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Value Iteration</h3>
+    <p><span class="hl">Value Iteration</span> combines evaluation and improvement into a single step. Instead of fully evaluating the policy first, it applies the Bellman optimality equation directly as an update rule:</p>
+    <div class="fbox">
+      <span class="lbl">Value Iteration Update Rule</span>
+      <div class="f">V_{k+1}(s) ← max_a Σ_{s'} P(s'|s,a) [R(s,a,s') + γ·V_k(s')]</div>
+      <div class="n">Repeat until |V_{k+1}(s) − V_k(s)| &lt; ε for all s. Then extract π*(s) = argmax_a Σ_{s'} P(s'|s,a)[R + γV*(s')]</div>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Initialize:</strong> V₀(s) = 0 for all states s.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Update:</strong> Apply Bellman optimality equation: V_{k+1}(s) = max_a[R(s,a) + γΣ_{s'} P(s'|s,a)V_k(s')]</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Check convergence:</strong> If max_s|V_{k+1}(s) − V_k(s)| &lt; ε, stop. Otherwise increment k and repeat.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Extract policy:</strong> π*(s) = argmax_a[R + γΣP(s'|s,a)V*(s')]</div></div>
+    </div>
+    <h4>Key Differences</h4>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Policy Iteration</th><th>Value Iteration</th></tr>
+      <tr><td>Steps per cycle</td><td>Full eval + improvement</td><td>One Bellman sweep</td></tr>
+      <tr><td>Convergence</td><td>Faster (fewer outer iterations)</td><td>Slower per iteration</td></tr>
+      <tr><td>Policy update</td><td>Explicitly maintained</td><td>Implicit (derived at end)</td></tr>
+      <tr><td>Bellman used</td><td>Expectation equation</td><td>Optimality equation</td></tr>
+      <tr><td>Best when</td><td>Cheap evaluation step</td><td>Large state spaces</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>On-Policy vs Off-Policy Learning</h3>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>On-Policy</th><th>Off-Policy</th></tr>
+      <tr><td>Definition</td><td>Learns value of policy currently being followed</td><td>Learns value of different (target) policy than behaviour policy</td></tr>
+      <tr><td>Exploration</td><td>Policy must explore AND be optimal → conflict</td><td>Behaviour policy explores; target policy is greedy → no conflict</td></tr>
+      <tr><td>Example</td><td>SARSA</td><td>Q-Learning</td></tr>
+      <tr><td>Convergence</td><td>Converges to near-optimal (ε-greedy)</td><td>Converges to optimal Q*</td></tr>
+    </table>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Policy & Value Iteration</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Differentiate between: (a) Value iteration and policy iteration (b) On-policy and off-policy</div>
+      <div class="pyq-meta">2024 · Part B Q2 · 4 marks</div>
+      <div class="pyq-topic">Topic: Policy Iteration, Value Iteration, On/Off-Policy · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>(a) Value Iteration vs Policy Iteration:</strong><br>
+        (Refer to the comparison table in theory section above)<br><br>
+        Additional point: Policy iteration often converges in fewer iterations because each policy evaluation gives a more accurate value function. Value iteration trades this accuracy for computational efficiency per iteration. Both converge to optimal π*.<br><br>
+        <strong>(b) On-Policy vs Off-Policy:</strong><br>
+        On-Policy: The policy being evaluated/improved is the SAME as the policy generating experience. SARSA is on-policy — it updates Q using the action actually taken next. More conservative, safer in real environments.<br><br>
+        Off-Policy: The policy being learned (target policy, usually greedy) is DIFFERENT from the policy generating data (behaviour policy, usually ε-greedy). Q-Learning is off-policy — it updates using max Q regardless of what action was actually taken. More sample-efficient, can reuse old experience.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain Markov Decision Process (MDP) also explain policy iteration and value iteration.</div>
+      <div class="pyq-meta">May 2025 · Part B Q3 · 4 marks</div>
+      <div class="pyq-topic">Topic: MDP, Policy Iteration, Value Iteration · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>MDP:</strong> Mathematical framework for sequential decision-making. Tuple (S,A,P,R,γ). Agent transitions between states via actions, receives rewards, seeks to maximize cumulative reward. Satisfies Markov property.<br><br>
+        <strong>Policy Iteration:</strong><br>
+        Start with initial policy π → Evaluate V^π fully (solve Bellman) → Improve policy greedily (π' = argmax_a Q) → Repeat until π stable. Guaranteed convergence to π*. Each cycle = evaluate + improve.<br><br>
+        <strong>Value Iteration:</strong><br>
+        Merges evaluation and improvement. Apply Bellman optimality equation directly:<br>
+        V(s) ← max_a Σ_{s'} P(s'|s,a)[R + γV(s')]<br>
+        Repeat until V converges → then extract optimal policy once at the end. Simpler but requires more iterations.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ Q-LEARNING ═══════════════ -->
+<section class="section" id="qlearning">
+  <div class="sec-head">
+    <span class="sec-num">07</span>
+    <h2 class="sec-title">Q-Learning</h2>
+    <span class="ipill hb hb-r">🔥 95% — Most Asked!</span>
+  </div>
+  <div class="theory">
+    <h3>Core Idea — Learning Optimal Q Without a Model</h3>
+    <p><span class="hl">Q-Learning</span> is a <strong>model-free, off-policy</strong> TD control algorithm that directly learns the optimal action-value function Q*(s,a) without needing a model of the environment (no need to know P(s'|s,a)).</p>
+    <p><strong>Intuition:</strong> Imagine you're exploring a maze. Every time you take a step, you update your "guess" of how good each position-direction pair is. Over time, your guesses converge to the true values. You don't need a map (model) — just your experiences.</p>
+    <div class="fbox">
+      <span class="lbl">Q-Learning Update Rule (★ MUST MEMORIZE ★)</span>
+      <div class="f">Q(s,a) ← Q(s,a) + α · [r + γ · max_{a'} Q(s',a') − Q(s,a)]</div>
+      <div class="n">α = learning rate (0 &lt; α ≤ 1) | γ = discount factor | r = reward received</div>
+      <div class="n">TD Error = r + γ·max Q(s',a') − Q(s,a) = (target) − (current estimate)</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Q-Learning Algorithm (Full)</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Initialize:</strong> Q(s,a) = 0 for all (s,a) pairs. Set α (learning rate), γ (discount), ε (exploration rate).</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>For each episode:</strong> Initialize state s (start state of episode).</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Choose action:</strong> Using ε-greedy policy — with probability ε choose random action; with probability (1-ε) choose a* = argmax_a Q(s,a).</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Take action a:</strong> Observe reward r and next state s'.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st"><strong>Update Q:</strong> Q(s,a) ← Q(s,a) + α[r + γ·max_{a'} Q(s',a') − Q(s,a)]</div></div>
+      <div class="step"><div class="sn">6</div><div class="st"><strong>Update state:</strong> s ← s'. If s' is terminal, go to Step 2. Else go to Step 3.</div></div>
+      <div class="step"><div class="sn">7</div><div class="st"><strong>Repeat</strong> until Q converges (changes become negligible).</div></div>
+    </div>
+    <h4>ε-Greedy Exploration</h4>
+    <p>Q-Learning uses ε-greedy to balance <span class="hl">exploration</span> (try new things) vs <span class="hl">exploitation</span> (use current best knowledge):</p>
+    <div class="fbox">
+      <div class="f">π(s) = random action,  with probability ε  (exploration)</div>
+      <div class="f">π(s) = argmax_a Q(s,a), with probability 1−ε  (exploitation)</div>
+      <div class="n">ε typically starts high (0.9) and decays over time as agent gains experience.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>⭐ RTU Numerical Example — Q-Learning</h3>
+    <div class="ex">
+      <div class="ex-lbl">📌 Q-Learning Walkthrough</div>
+      <p>Simple 3-state MDP: States = {A, B, Goal}. Actions = {stay, move}.</p>
+      <pre>
+Initial Q-table:
+       stay   move
+A    [  0,    0  ]
+B    [  0,    0  ]
+
+Given: α=0.5, γ=0.9, Episode: A→move→B (r=0), B→move→Goal (r=10)
+
+Step 1: State=A, Action=move, r=0, Next=B
+  Q(A,move) ← 0 + 0.5[0 + 0.9·max(Q(B)) − 0]
+            ← 0 + 0.5[0 + 0.9·0] = 0
+
+Step 2: State=B, Action=move, r=10, Next=Goal (terminal)
+  max Q(Goal) = 0 (terminal state)
+  Q(B,move) ← 0 + 0.5[10 + 0.9·0 − 0]
+            ← 0.5 × 10 = 5
+
+Updated Q-table after episode 1:
+       stay   move
+A    [  0,    0  ]
+B    [  0,    5  ]
+
+Episode 2 — Step 1: State=A, Action=move, r=0, Next=B
+  Q(A,move) ← 0 + 0.5[0 + 0.9·max(0,5) − 0]
+            ← 0 + 0.5[0 + 4.5] = 2.25
+
+After more episodes, Q(A,move) converges toward 0.9×10 = 9, Q(B,move)→10.
+</pre>
+    </div>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Exam Validation Trick</div><p>After Q-Learning converges, verify: Q*(s,a) = R + γ·max Q*(s'). For terminal state: Q(Goal,*) = 0. Work backwards to check your table. Also verify: optimal policy = always choose action with max Q in each state. If your final policy reaches the goal, your Q-table is likely correct.</p></div></div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Q-Learning</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Differentiate Q-learning and SARSA and when you would use each one, explain with example.</div>
+      <div class="pyq-meta">Aug 2023 · Part B Q6 · 4+4 marks</div>
+      <div class="pyq-topic">Topic: Q-Learning, SARSA · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Q-Learning vs SARSA — Full Comparison:</strong><br><br>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr style="background:#1a2035"><th style="padding:8px;text-align:left;color:#60a5fa">Aspect</th><th style="padding:8px;text-align:left;color:#60a5fa">Q-Learning</th><th style="padding:8px;text-align:left;color:#f97316">SARSA</th></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #1e2840">Type</td><td style="padding:8px;border-bottom:1px solid #1e2840">Off-policy</td><td style="padding:8px;border-bottom:1px solid #1e2840">On-policy</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #1e2840">Update</td><td style="padding:8px;border-bottom:1px solid #1e2840">Uses max_a Q(s',a')</td><td style="padding:8px;border-bottom:1px solid #1e2840">Uses Q(s',a') where a' is ACTUALLY taken</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #1e2840">Formula</td><td style="padding:8px;border-bottom:1px solid #1e2840">Q(s,a)←Q+α[r+γ·maxQ(s',·)−Q(s,a)]</td><td style="padding:8px;border-bottom:1px solid #1e2840">Q(s,a)←Q+α[r+γ·Q(s',a')−Q(s,a)]</td></tr>
+          <tr><td style="padding:8px;border-bottom:1px solid #1e2840">Convergence</td><td style="padding:8px;border-bottom:1px solid #1e2840">Converges to Q* (optimal)</td><td style="padding:8px;border-bottom:1px solid #1e2840">Converges to Q^π (current policy)</td></tr>
+          <tr><td style="padding:8px">Use when</td><td style="padding:8px">Need optimal policy fast, simulation OK</td><td style="padding:8px">Safety critical; real-world deployment</td></tr>
+        </table><br>
+        <strong>When to use Q-Learning:</strong> When you can freely explore without penalty. Example: training a video game agent in simulation. The agent can take risky actions to learn the optimal strategy.<br><br>
+        <strong>When to use SARSA:</strong> When mistakes are costly (robot walking — falling is expensive). SARSA is more cautious because it accounts for the exploration it will actually do, avoiding "cliff edges" near risky areas.<br><br>
+        <strong>Cliff Walking Example:</strong> Q-Learning learns to walk along the cliff edge (optimal but risky). SARSA learns to take the longer safe path (suboptimal but safe), because it factors in that ε-greedy exploration might accidentally step off the cliff.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ SARSA ═══════════════ -->
+<section class="section" id="sarsa">
+  <div class="sec-head">
+    <span class="sec-num">08</span>
+    <h2 class="sec-title">SARSA (State-Action-Reward-State-Action)</h2>
+    <span class="ipill hb hb-r">🔥 90% · Part B/C</span>
+  </div>
+  <div class="theory">
+    <h3>SARSA — The Name Tells the Algorithm</h3>
+    <p>The name <span class="hl">SARSA</span> describes exactly what it uses in the update: <strong>S</strong>tate, <strong>A</strong>ction, <strong>R</strong>eward, next <strong>S</strong>tate, next <strong>A</strong>ction — a quintuple (s, a, r, s', a').</p>
+    <div class="fbox">
+      <span class="lbl">SARSA Update Rule (★ MUST MEMORIZE ★)</span>
+      <div class="f">Q(s,a) ← Q(s,a) + α · [r + γ · Q(s',a') − Q(s,a)]</div>
+      <div class="n">Key difference from Q-Learning: uses Q(s',a') where a' is the action ACTUALLY CHOSEN next (not max)</div>
+      <div class="n">a' is selected using the SAME ε-greedy policy used for a → on-policy</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>SARSA Algorithm — Full Steps</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st">Initialize Q(s,a) = 0 for all s, a. Set α, γ, ε.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st">For each episode: Initialize s. Choose a from s using ε-greedy policy.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st">Take action a. Observe reward r and next state s'.</div></div>
+      <div class="step"><div class="sn">4</div><div class="st">Choose a' from s' using ε-greedy (same policy). ← This is what makes it ON-policy.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st">Update: Q(s,a) ← Q(s,a) + α[r + γQ(s',a') − Q(s,a)]</div></div>
+      <div class="step"><div class="sn">6</div><div class="st">s ← s', a ← a'. If s is terminal, end episode. Else go to Step 3.</div></div>
+    </div>
+    <h4>SARSA vs Q-Learning — Visual Comparison</h4>
+    <div class="diag">
+      <svg viewBox="0 0 580 120" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <text x="145" y="18" text-anchor="middle" fill="#60a5fa" font-family="Syne" font-size="12" font-weight="700">Q-Learning (off-policy)</text>
+        <text x="435" y="18" text-anchor="middle" fill="#f97316" font-family="Syne" font-size="12" font-weight="700">SARSA (on-policy)</text>
+        <!-- Q-Learning flow -->
+        <rect x="10" y="30" width="50" height="30" rx="4" fill="#1a2035" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="35" y="50" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="10">s, a</text>
+        <polygon points="63,45 78,40 78,50" fill="#60a5fa"/>
+        <rect x="82" y="30" width="40" height="30" rx="4" fill="#1a2035" stroke="#f97316" stroke-width="1.5"/>
+        <text x="102" y="50" text-anchor="middle" fill="#f97316" font-family="IBM Plex Mono" font-size="10">r, s'</text>
+        <polygon points="125,45 140,40 140,50" fill="#60a5fa"/>
+        <rect x="144" y="25" width="100" height="40" rx="4" fill="#060911" stroke="#34d399" stroke-width="1.5"/>
+        <text x="194" y="44" text-anchor="middle" fill="#34d399" font-family="IBM Plex Mono" font-size="9">max Q(s',a')</text>
+        <text x="194" y="58" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">(hypothetical)</text>
+        <!-- SARSA flow -->
+        <rect x="300" y="30" width="50" height="30" rx="4" fill="#1a2035" stroke="#f97316" stroke-width="1.5"/>
+        <text x="325" y="50" text-anchor="middle" fill="#f97316" font-family="IBM Plex Mono" font-size="10">s, a</text>
+        <polygon points="353,45 368,40 368,50" fill="#f97316"/>
+        <rect x="372" y="30" width="40" height="30" rx="4" fill="#1a2035" stroke="#f97316" stroke-width="1.5"/>
+        <text x="392" y="50" text-anchor="middle" fill="#f97316" font-family="IBM Plex Mono" font-size="10">r, s'</text>
+        <polygon points="415,45 430,40 430,50" fill="#f97316"/>
+        <rect x="434" y="25" width="100" height="40" rx="4" fill="#060911" stroke="#f97316" stroke-width="1.5"/>
+        <text x="484" y="44" text-anchor="middle" fill="#f97316" font-family="IBM Plex Mono" font-size="9">Q(s',a') actual</text>
+        <text x="484" y="58" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">(actually taken)</text>
+        <text x="194" y="105" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Assumes optimal next action</text>
+        <text x="484" y="105" text-anchor="middle" fill="#8899b0" font-family="IBM Plex Mono" font-size="9">Uses actual next action taken</text>
+      </svg>
+      <div class="diag-cap">Fig 8.1 — The only difference: Q-Learning uses max over all a'; SARSA uses actual a' chosen by policy</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — SARSA</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is the role of State-Action-Reward-State-Action (SARSA) in machine learning? Differentiate between SARSA and Q-learning.</div>
+      <div class="pyq-meta">May 2025 · Part C Q2 · 10 marks</div>
+      <div class="pyq-topic">Topic: SARSA, Q-Learning comparison · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Role of SARSA in Machine Learning:</strong><br><br>
+        SARSA (State-Action-Reward-State-Action) is a model-free, on-policy temporal difference (TD) control algorithm used to find the optimal policy in a reinforcement learning setting.<br><br>
+        <strong>Role/Applications:</strong><br>
+        • Robot control: trains robots to navigate safely while avoiding risky actions<br>
+        • Game playing: learns strategies for board games, video games<br>
+        • Traffic control: optimizes signal timings while considering actual driver behavior<br>
+        • Finance: portfolio optimization under realistic trading constraints<br><br>
+        <strong>Why SARSA specifically:</strong> SARSA is on-policy — it evaluates and improves the policy being followed during learning. This makes it more conservative and suitable for real-world deployments where taking risky exploratory actions has real consequences.<br><br>
+        <strong>SARSA Update:</strong><br>
+        Q(sₜ,aₜ) ← Q(sₜ,aₜ) + α[rₜ₊₁ + γQ(sₜ₊₁,aₜ₊₁) − Q(sₜ,aₜ)]<br>
+        where aₜ₊₁ is the action ACTUALLY chosen in sₜ₊₁.<br><br>
+        <strong>SARSA vs Q-Learning — Detailed Comparison:</strong><br><br>
+        1. <strong>Policy Type:</strong> SARSA = on-policy (behavior = target policy). Q-Learning = off-policy (behavior policy generates data; target policy = greedy)<br><br>
+        2. <strong>Update difference:</strong><br>
+        &nbsp;&nbsp;SARSA: uses Q(s',a') where a' ~ π(·|s') (actually chosen action)<br>
+        &nbsp;&nbsp;Q-Learning: uses max_a' Q(s',a') (best possible action, not necessarily chosen)<br><br>
+        3. <strong>Risk sensitivity:</strong> SARSA accounts for exploration during updates → conservative. Q-Learning ignores exploration in update → aggressive/optimal<br><br>
+        4. <strong>Convergence:</strong> Both converge under standard conditions (decaying ε, decaying α, sufficient exploration). Q-Learning → optimal Q*. SARSA → optimal Q for the ε-greedy policy.<br><br>
+        5. <strong>Practical example:</strong><br>
+        Cliff Walking (grid world with cliff edge): Q-Learning learns to walk right along the cliff (optimal path). SARSA learns a safer path away from the cliff because it accounts for random exploration steps that might fall off. In simulation, Q-Learning is better. In deployment, SARSA is safer.
+      </div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain various methods of SARSA.</div>
+      <div class="pyq-meta">June 2022 · Part B Q6b · 4 marks</div>
+      <div class="pyq-topic">Topic: SARSA Methods · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Methods/Variants of SARSA:</strong><br><br>
+        <strong>1. Standard SARSA (one-step SARSA):</strong><br>
+        Updates Q after each (s,a,r,s',a') transition. Basic on-policy TD(0) control.<br>
+        Q(s,a) ← Q(s,a) + α[r + γQ(s',a') − Q(s,a)]<br><br>
+        <strong>2. SARSA(λ) — Eligibility Traces:</strong><br>
+        Extends SARSA to multi-step returns. Maintains eligibility trace e(s,a) for each state-action pair.<br>
+        δ = r + γQ(s',a') − Q(s,a) (TD error)<br>
+        e(s,a) ← γλe(s,a) + 1 (update trace for current s,a)<br>
+        Q(s,a) ← Q(s,a) + α·δ·e(s,a) for ALL (s,a)<br>
+        λ=0: equivalent to standard SARSA. λ=1: equivalent to Monte Carlo.<br><br>
+        <strong>3. n-Step SARSA:</strong><br>
+        Updates using returns from n steps ahead instead of just 1.<br>
+        G_t^(n) = r_{t+1} + γr_{t+2} + ... + γ^(n-1)r_{t+n} + γⁿQ(s_{t+n}, a_{t+n})<br>
+        Q(s,a) ← Q(s,a) + α[G_t^(n) − Q(s,a)]<br>
+        n=1: SARSA. n=∞: Monte Carlo.<br><br>
+        <strong>4. Expected SARSA:</strong><br>
+        Instead of Q(s',a'), uses expected value over all possible a':<br>
+        Q(s,a) ← Q(s,a) + α[r + γ Σ_{a'} π(a'|s')Q(s',a') − Q(s,a)]<br>
+        Reduces variance compared to standard SARSA.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ MODEL-BASED RL ═══════════════ -->
+<section class="section" id="model-based">
+  <div class="sec-head">
+    <span class="sec-num">09</span>
+    <h2 class="sec-title">Model-Based Reinforcement Learning</h2>
+    <span class="ipill hb hb-o">75% · Part B</span>
+  </div>
+  <div class="theory">
+    <h3>What is Model-Based RL?</h3>
+    <p>In <span class="hl">model-based RL</span>, the agent <strong>builds an internal model</strong> of the environment (learns the transition function P(s'|s,a) and reward function R(s,a)). It then uses this model to <strong>plan ahead</strong> without taking actual actions.</p>
+    <p><strong>Analogy:</strong> A chess grandmaster mentally simulates future moves before playing. The model = their knowledge of chess rules. Planning = mental simulation. In model-free RL, the agent learns only from actual experience — like a beginner who must physically try every move.</p>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Model-Free RL</th><th>Model-Based RL</th></tr>
+      <tr><td>Needs model?</td><td>No (learns from experience only)</td><td>Yes (learns/uses P and R)</td></tr>
+      <tr><td>Sample efficiency</td><td>Low (needs many samples)</td><td>High (can simulate)</td></tr>
+      <tr><td>Computational cost</td><td>Low (just interact)</td><td>High (planning + learning)</td></tr>
+      <tr><td>Model error</td><td>Not affected</td><td>Model errors → suboptimal policy</td></tr>
+      <tr><td>Examples</td><td>Q-Learning, SARSA</td><td>Dyna-Q, World Models, AlphaZero</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>Dyna-Q — Key Model-Based Algorithm</h3>
+    <p><span class="hl">Dyna-Q</span> integrates model learning with Q-Learning. It interleaves real experience with simulated experience from the learned model.</p>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Real experience:</strong> Take action a in real env → observe r, s' → update Q(s,a) (like Q-Learning).</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Model learning:</strong> Update model: M(s,a) ← (r, s') — store what happened.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Planning (simulated):</strong> Repeat n times: randomly pick (s,a) from history → query model M(s,a) → get simulated (r,s') → update Q(s,a) again using simulated data.</div></div>
+    </div>
+    <p>The key benefit: n simulated Q-updates per real step → much faster convergence. AlphaGo uses model-based planning (MCTS — Monte Carlo Tree Search).</p>
+  </div>
+  <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection — RL Methods Summary</div><p>The whole RL landscape: <strong>DP</strong> (has model, no learning needed — Policy/Value Iteration) → <strong>Model-Based RL</strong> (learns model, then plans) → <strong>Model-Free RL</strong> (no model — Monte Carlo for complete episodes; TD/Q-Learning/SARSA for step-by-step). RTU exam pattern: always compare at least two of these in every Part B/C question about RL.</p></div></div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 RTU PYQs — Model-Based RL</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What do you mean by reinforcement learning? Also explain the model based reinforcement learning.</div>
+      <div class="pyq-meta">May 2025 · Part B Q2 · 4 marks</div>
+      <div class="pyq-topic">Topic: RL, Model-Based RL · Unit 5</div>
+      <button class="ptog" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ Hide':'▼ Show Answer'">▼ Show Answer</button>
+      <div class="ans">
+        <strong>Reinforcement Learning:</strong><br>
+        RL is a type of ML where an agent learns to take actions in an environment to maximize cumulative reward. The agent is not told what actions to take; it must discover the best actions by trial and error. The feedback is a scalar reward signal — positive for good actions, negative for bad. Key components: Agent, Environment, State, Action, Reward, Policy, Value function.<br><br>
+        <strong>Model-Based Reinforcement Learning:</strong><br>
+        In model-based RL, the agent builds an internal model of the environment — specifically:<br>
+        • Transition model: P(s'|s,a) — what happens when action a is taken in state s<br>
+        • Reward model: R(s,a) — what reward is received<br><br>
+        The agent uses this learned model to <strong>plan</strong> — simulate future transitions without taking real actions — and then uses planning to update its policy/value function.<br><br>
+        <strong>Advantages:</strong><br>
+        • Highly sample-efficient (fewer real interactions needed)<br>
+        • Can plan ahead like a chess player thinking ahead<br><br>
+        <strong>Disadvantages:</strong><br>
+        • Model errors can propagate and lead to suboptimal policy ("model bias")<br>
+        • Building accurate models of complex environments is hard<br><br>
+        <strong>Key Algorithm — Dyna-Q:</strong><br>
+        Combines Q-Learning with model learning. For each real experience, performs n planning steps using the learned model → dramatically speeds up learning.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ALL PYQS MASTER ═══════════════ -->
+<section class="section" id="pyqs">
+  <div class="sec-head">
+    <span class="sec-num">✦</span>
+    <h2 class="sec-title">All RTU PYQs — Unit 5 Master List</h2>
+    <span class="ipill hb hb-r">Complete Reference</span>
+  </div>
+  <div class="theory">
+    <h3>Part A (2 marks) — Unit 5 Questions</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>What is the significance of standard deviation in ML?</td><td>Statistics/ML basics</td></tr>
+      <tr><td>2025</td><td>Differentiate between overfitting and underfitting</td><td>ML concepts</td></tr>
+      <tr><td>2024</td><td>What is Markov Property? Express mathematically.</td><td>MDP ⭐</td></tr>
+      <tr><td>2024</td><td>Intuition about MRP and Bellman Equation</td><td>Bellman ⭐</td></tr>
+      <tr><td>2023</td><td>Compare RL and Supervised Learning</td><td>RL intro ⭐</td></tr>
+      <tr><td>2023</td><td>What is Markov Decision Process?</td><td>MDP ⭐</td></tr>
+      <tr><td>2022</td><td>Advantage of unlabelled data in semi-supervised outlier detection</td><td>Semi-supervised</td></tr>
+      <tr><td>2022</td><td>Is RL an appropriate model for evolution? Why?</td><td>RL concepts</td></tr>
+    </table>
+    <h3 style="margin-top:20px">Part B (4 marks) — Unit 5 Questions</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>Explain reinforcement learning + model-based RL</td><td>RL, Model-based ⭐</td></tr>
+      <tr><td>2025</td><td>MDP + policy iteration + value iteration</td><td>MDP, Iterations ⭐</td></tr>
+      <tr><td>2024</td><td>Steps of policy evaluation using Monte Carlo</td><td>Monte Carlo ⭐</td></tr>
+      <tr><td>2024</td><td>Value iteration vs policy iteration; On vs off-policy</td><td>Iterations ⭐⭐</td></tr>
+      <tr><td>2024</td><td>Optimal policy in MDP + how to find it</td><td>MDP, Optimal Policy ⭐</td></tr>
+      <tr><td>2023</td><td>Q-Learning vs SARSA + when to use each</td><td>Q-Learning, SARSA ⭐⭐</td></tr>
+      <tr><td>2022</td><td>DP vs Monte Carlo vs TD methods + Monte Carlo policy eval</td><td>DP/MC/TD ⭐</td></tr>
+      <tr><td>2022</td><td>MDP with example; SARSA methods</td><td>MDP, SARSA ⭐</td></tr>
+    </table>
+    <h3 style="margin-top:20px">Part C (10-15 marks) — Unit 5 Questions</h3>
+    <table class="tbl">
+      <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+      <tr><td>2025</td><td>SARSA role + differentiate from Q-Learning</td><td>SARSA, Q-Learning ⭐⭐</td></tr>
+      <tr><td>2024</td><td>(RL questions spread across Q3 in 2024)</td><td>MDP, Bellman</td></tr>
+      <tr><td>2023</td><td>Illustrate MDP in RL with example</td><td>MDP ⭐⭐</td></tr>
+      <tr><td>2023</td><td>AUC-ROC + binary classification</td><td>Model Evaluation</td></tr>
+      <tr><td>2022</td><td>MDP + SARSA methods (Part C)</td><td>MDP, SARSA ⭐</td></tr>
+    </table>
+  </div>
+  <div class="tip trick"><div class="ti">🏆</div><div class="tb"><div class="ttl">Top 5 Must-Master for Exam</div><p>
+    <strong>1.</strong> MDP definition + Markov Property formula + Grid World example<br>
+    <strong>2.</strong> Bellman Optimality Equation — both V* and Q* forms<br>
+    <strong>3.</strong> Q-Learning update rule + full algorithm + worked numerical<br>
+    <strong>4.</strong> SARSA update rule + comparison table with Q-Learning<br>
+    <strong>5.</strong> Policy Iteration vs Value Iteration — algorithm steps + comparison table
+  </p></div></div>
+  <div class="tip note"><div class="ti">📋</div><div class="tb"><div class="ttl">10-Mark Answer Template for Any RL Question</div><p>
+    <strong>Para 1:</strong> Definition (3 lines, include key technical terms)<br>
+    <strong>Formula:</strong> Write the key formula in a boxed area (earns 3 marks alone)<br>
+    <strong>Algorithm:</strong> Numbered steps<br>
+    <strong>Diagram:</strong> Agent-environment loop / state transition / Q-table update<br>
+    <strong>Example:</strong> Grid World or Cliff Walking with numbers<br>
+    <strong>Comparison:</strong> 5-row table vs related algorithm<br>
+    <strong>Applications:</strong> 3–4 real-world uses
+  </p></div></div>
+</section>
+
+</main>
+</div>
+
+<button class="fab" id="fabBtn" onclick="openSB()">☰</button>
+
+<script>
+function openSB(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('vis');document.getElementById('fabBtn').textContent='✕'}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('vis');document.getElementById('fabBtn').textContent='☰'}
+const secs=document.querySelectorAll('.section'),navs=document.querySelectorAll('.navitem');
+window.addEventListener('scroll',()=>{let cur='';secs.forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id});navs.forEach(n=>{n.classList.remove('active');if(n.getAttribute('href')==='#'+cur)n.classList.add('active')})});
+</script>
+</body>
+</html>
