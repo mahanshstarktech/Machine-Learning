@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Unit 4 — Statistical Learning & Feature Engineering | RTU VI Sem</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#060910;--bg2:#0a0d18;--surface:#111827;--surface2:#181f32;
+  --border:#1f2d45;--border2:#14203a;
+  --acc:#a78bfa;  /* violet – statistical */
+  --acc2:#10b981; /* emerald */
+  --acc3:#f59e0b; /* amber */
+  --acc4:#f43f5e; /* rose */
+  --acc5:#3b82f6; /* blue */
+  --gold:#fbbf24;
+  --text:#dde4f0;--dim:#4b6080;--dim2:#7a93b8;
+  --mono:'IBM Plex Mono',monospace;
+  --head:'Syne',sans-serif;
+  --body:'Outfit',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.75;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.topnav{position:sticky;top:0;z-index:200;background:rgba(6,9,16,0.95);backdrop-filter:blur(18px);border-bottom:1px solid var(--border2);padding:0 20px;display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.tnlabel{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);padding:13px 12px 13px 0;border-right:1px solid var(--border);margin-right:6px;white-space:nowrap;flex-shrink:0}
+.tnlink{font-family:var(--mono);font-size:11px;padding:7px 13px;border-radius:5px;text-decoration:none;color:var(--dim2);white-space:nowrap;flex-shrink:0;transition:all .18s;border:1px solid transparent}
+.tnlink:hover{color:var(--text);background:var(--surface2)}
+.tnlink.active{color:var(--acc);background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.3)}
+.tnlink.pyq{color:#22d3ee;background:rgba(34,211,238,0.06);border-color:rgba(34,211,238,0.2);margin-left:4px}
+
+.hero{position:relative;overflow:hidden;padding:60px 36px 52px;background:var(--bg)}
+.hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(167,139,250,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.05) 1px,transparent 1px);background-size:44px 44px;animation:gs 32s linear infinite}
+@keyframes gs{0%{transform:translateY(0)}100%{transform:translateY(44px)}}
+.hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 65% 55% at 30% -5%,rgba(167,139,250,0.13) 0%,transparent 65%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(59,130,246,0.07) 0%,transparent 60%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.eyebrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--acc);animation:fup .5s ease both}
+.edot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+@keyframes fup{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.hero-title{font-family:var(--head);font-weight:800;font-size:clamp(34px,7vw,70px);line-height:1.0;color:#fff;letter-spacing:-1px;animation:fup .5s .08s ease both}
+.hero-title .grad{background:linear-gradient(120deg,var(--acc) 0%,#c4b5fd 50%,var(--acc5) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-sub{font-size:16px;color:var(--dim2);max-width:580px;animation:fup .5s .16s ease both}
+.hero-sub strong{color:var(--text);font-weight:600}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap;animation:fup .5s .28s ease both}
+.hb{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid}
+.hb-v{color:var(--acc);border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.08)}
+.hb-g{color:var(--acc2);border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.08)}
+.hb-a{color:var(--acc3);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08)}
+.hb-r{color:var(--acc4);border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.08)}
+.hb-b{color:var(--acc5);border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08)}
+
+.layout{display:flex;max-width:1280px;margin:0 auto}
+.sidebar{width:256px;min-width:256px;padding:20px 12px;border-right:1px solid var(--border);position:sticky;top:44px;height:calc(100vh - 44px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.sb-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sb-title{font-family:var(--mono);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--acc)}
+.sb-close{display:none;background:none;border:1px solid var(--border);border-radius:4px;color:var(--dim2);cursor:pointer;padding:2px 8px;font-family:var(--mono);font-size:11px}
+.navitem{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;font-family:var(--head);font-size:12px;font-weight:600;color:var(--dim2);text-decoration:none;margin-bottom:2px;transition:all .18s;border-left:2px solid transparent}
+.navitem:hover,.navitem.active{background:var(--surface2);color:var(--text)}
+.navitem.active{color:var(--acc);border-left-color:var(--acc)}
+.nimp{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px;background:var(--surface2)}
+.nimp.h{color:var(--acc4)}.nimp.m{color:var(--gold)}.nimp.l{color:var(--acc2)}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:98;backdrop-filter:blur(2px)}
+.overlay.vis{display:block}
+.fab{display:none;position:fixed;bottom:20px;right:20px;z-index:1000;width:50px;height:50px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;font-size:20px;color:#000;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(167,139,250,.4);transition:transform .2s}
+.fab:hover{transform:scale(1.1)}
+
+.content{flex:1;padding:32px 36px;max-width:calc(100% - 256px);overflow-x:hidden}
+.section{margin-bottom:64px;scroll-margin-top:60px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--acc);background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);padding:4px 8px;border-radius:4px;min-width:36px;text-align:center}
+.sec-title{font-family:var(--head);font-size:clamp(18px,3vw,22px);font-weight:800;color:#fff}
+.ipill{margin-left:auto;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:20px}
+
+.theory{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;margin-bottom:16px}
+.theory h3{font-family:var(--head);font-size:16px;font-weight:700;color:var(--acc);margin-bottom:12px}
+.theory p{margin-bottom:10px;font-size:15px}.theory p:last-child{margin-bottom:0}
+.theory ul,.theory ol{padding-left:20px;margin:10px 0}
+.theory li{margin-bottom:7px;font-size:15px}
+h4{font-family:var(--head);font-size:15px;font-weight:700;color:var(--text);margin:16px 0 8px}
+
+.fbox{background:#040710;border:1px solid rgba(167,139,250,.25);border-left:3px solid var(--acc);border-radius:8px;padding:16px 20px;margin:14px 0;font-family:var(--mono);font-size:13px;overflow-x:auto}
+.fbox .lbl{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;display:block}
+.fbox .f{color:#c4b5fd;margin:4px 0;line-height:1.6}
+.fbox .n{color:var(--dim2);font-size:12px;margin-top:8px}
+
+.tip{border-radius:8px;padding:14px 18px;margin:14px 0;display:flex;gap:12px}
+.tip.trick{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25)}
+.tip.note{background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.25)}
+.tip.link{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25)}
+.tip.warn{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25)}
+.ti{font-size:18px;flex-shrink:0;margin-top:2px}
+.tb{flex:1}
+.ttl{font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.tip.trick .ttl{color:var(--gold)}.tip.note .ttl{color:var(--acc2)}.tip.link .ttl{color:var(--acc5)}.tip.warn .ttl{color:var(--acc4)}
+.tb p{font-size:14px;color:var(--text);margin:0}
+
+.tbl{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;display:block;overflow-x:auto}
+.tbl th{background:var(--surface2);padding:9px 13px;text-align:left;font-family:var(--head);font-weight:700;color:var(--acc);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:9px 13px;border-bottom:1px solid var(--border);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--surface2)}
+
+.steps{margin:14px 0}
+.step{display:flex;gap:14px;margin-bottom:12px}
+.sn{width:28px;height:28px;min-width:28px;border-radius:50%;background:var(--acc);color:#000;font-family:var(--mono);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.st{font-size:15px;padding-top:4px}
+
+.ex{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin:14px 0}
+.ex-lbl{font-family:var(--mono);font-size:10px;color:var(--acc4);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+pre{background:#040710;border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;color:var(--acc2);margin:12px 0;line-height:1.65}
+
+.diag{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;text-align:center;overflow-x:auto}
+.diag-cap{font-family:var(--mono);font-size:11px;color:var(--dim2);margin-top:10px}
+
+.ibar-wrap{margin-bottom:9px}
+.ibar-lbl{font-family:var(--mono);font-size:12px;color:var(--dim2);margin-bottom:4px;display:flex;justify-content:space-between}
+.ibar{height:7px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.ibar-fill{height:100%;border-radius:3px}
+.ih .ibar-fill{background:var(--acc4)}.im .ibar-fill{background:var(--gold)}.il .ibar-fill{background:var(--acc2)}
+
+.pyq-sec{background:#060810;border:1px solid rgba(167,139,250,.22);border-radius:10px;padding:20px 24px;margin-top:24px}
+.pyq-head{font-family:var(--head);font-size:14px;font-weight:700;color:var(--acc);margin-bottom:16px}
+.pyq-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
+.pyq-q{font-family:var(--head);font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.pyq-meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:8px}
+.pyq-topic{font-family:var(--mono);font-size:10px;color:var(--acc);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);padding:2px 8px;border-radius:3px;display:inline-block;margin-bottom:10px}
+.ptog{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:6px 14px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--acc);margin-top:8px;transition:all .2s}
+.ptog:hover{background:var(--acc);color:#000}
+.ans{display:none;margin-top:14px;font-size:14px;line-height:1.8;color:var(--dim2)}
+.ans.open{display:block}
+.ans strong{color:var(--text)}
+
+.hl{color:var(--acc);font-weight:600}.hl-g{color:var(--acc2);font-weight:600}.hl-a{color:var(--acc3);font-weight:600}.hl-r{color:var(--acc4);font-weight:600}.hl-b{color:var(--acc5);font-weight:600}
+.divider{border:none;border-top:1px solid var(--border);margin:28px 0}
+
+@media(max-width:768px){
+  .sidebar{position:fixed;top:0;left:0;height:100vh;z-index:99;background:var(--bg);transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 30px rgba(0,0,0,.8)}
+  .sb-close{display:block}.fab{display:flex}
+  .content{max-width:100%;padding:20px 16px}.hero{padding:48px 20px 44px}
+}
+@media(min-width:769px){.fab{display:none!important}.overlay{display:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <span class="tnlabel">ML · RTU</span>
+  <a class="tnlink" href="index.html">🏠 Home</a>
+  <a class="tnlink" href="unit2.html">🎯 Unit 2: Supervised</a>
+  <a class="tnlink" href="unit3.html">🔵 Unit 3: Unsupervised</a>
+  <a class="tnlink active" href="unit4.html">📐 Unit 4: Statistical</a>
+  <a class="tnlink" href="unit5.html">🤖 Unit 5: RL</a>
+  <a class="tnlink" href="unit6.html">📡 Unit 6: Neural Nets</a>
+  <a class="tnlink pyq" href="pyq.html">📋 Solved PYQs</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow"><span class="edot"></span>ML · Unit 4 · 6E7102 / 6CS4-02</div>
+    <h1 class="hero-title">Statistical Learning<br><span class="grad">&amp; Feature Engineering</span></h1>
+    <p class="hero-sub">PCA · SVD · Feature Selection · Filter/Wrapper/Embedded Methods · <strong>Model Evaluation · AUC-ROC</strong> — from scratch with all RTU PYQs solved.</p>
+    <div class="hero-badges">
+      <span class="hb hb-v">⭐ PCA High Priority</span>
+      <span class="hb hb-b">📐 Formulas Included</span>
+      <span class="hb hb-a">🔢 Worked Examples</span>
+      <span class="hb hb-g">✅ All PYQs Solved</span>
+      <span class="hb hb-r">🧠 Connects to All Units</span>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="overlay" onclick="closeSB()"></div>
+<div class="layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="sb-title">Unit 4 Topics</span>
+    <button class="sb-close" onclick="closeSB()">✕</button>
+  </div>
+  <a class="navitem active" href="#overview">📊 Importance Overview</a>
+  <a class="navitem" href="#slt">🧮 Statistical Learning Theory<span class="nimp m">75%</span></a>
+  <a class="navitem" href="#pca">🔮 PCA — Principal Component Analysis<span class="nimp h">90%</span></a>
+  <a class="navitem" href="#svd">🔷 SVD — Singular Value Decomposition<span class="nimp m">75%</span></a>
+  <a class="navitem" href="#feature-selection">🎯 Feature Selection Methods<span class="nimp h">80%</span></a>
+  <a class="navitem" href="#evaluation">📊 Model Evaluation Metrics<span class="nimp h">85%</span></a>
+  <a class="navitem" href="#model-selection">🔍 Model Selection<span class="nimp m">70%</span></a>
+  <a class="navitem" href="#pyqs">📝 All PYQs</a>
+</nav>
+
+<main class="content">
+
+<!-- ═══ OVERVIEW ═══ -->
+<section class="section" id="overview">
+  <div class="sec-head">
+    <span class="sec-num">00</span>
+    <h2 class="sec-title">Topic Importance — Unit 4</h2>
+  </div>
+  <div class="theory">
+    <p>Unit 4 covers the mathematical backbone of ML. <strong>PCA</strong> appears in every single RTU paper (2022–2025), making it the highest priority topic here. Model evaluation metrics (Precision, Recall, AUC-ROC) are also consistently tested. Feature selection methods are asked in 2-mark Part A questions regularly.</p>
+    <div class="ibar-wrap ih" style="margin-top:16px"><div class="ibar-lbl"><span>PCA (Principal Component Analysis)</span><span style="color:var(--acc4)">90%</span></div><div class="ibar"><div class="ibar-fill" style="width:90%"></div></div></div>
+    <div class="ibar-wrap ih" style="margin-top:10px"><div class="ibar-lbl"><span>Model Evaluation (AUC-ROC, Precision/Recall)</span><span style="color:var(--acc4)">85%</span></div><div class="ibar"><div class="ibar-fill" style="width:85%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Feature Selection (Filter/Wrapper/Embedded)</span><span style="color:var(--gold)">80%</span></div><div class="ibar"><div class="ibar-fill" style="width:80%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>SVD (Singular Value Decomposition)</span><span style="color:var(--gold)">75%</span></div><div class="ibar"><div class="ibar-fill" style="width:75%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Statistical Learning Theory (Bias-Variance)</span><span style="color:var(--gold)">75%</span></div><div class="ibar"><div class="ibar-fill" style="width:75%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Dimensionality Reduction / Curse of Dimensionality</span><span style="color:var(--gold)">72%</span></div><div class="ibar"><div class="ibar-fill" style="width:72%"></div></div></div>
+    <div class="ibar-wrap im" style="margin-top:10px"><div class="ibar-lbl"><span>Model Selection / Cross-Validation</span><span style="color:var(--gold)">70%</span></div><div class="ibar"><div class="ibar-fill" style="width:70%"></div></div></div>
+  </div>
+  <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Unit 4 Exam Strategy</div><p>PCA is a 10-mark Part C question almost every year. Always include: definition → covariance matrix → eigenvalue/eigenvector → projection → example. For model evaluation, the AUC-ROC curve explanation (why precision/recall alone isn't enough) is a 15-mark question from 2023. <strong>Unit Connections:</strong> Feature selection (U4) improves Decision Trees (U2). PCA reduces features for K-means clustering (U3). Standard deviation and variance from statistics underpin all model evaluation here.</p></div></div>
+</section>
+
+<!-- ═══ STATISTICAL LEARNING THEORY ═══ -->
+<section class="section" id="slt">
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <h2 class="sec-title">Introduction to Statistical Learning Theory</h2>
+    <span class="ipill hb hb-a">75% · Foundation</span>
+  </div>
+  <div class="theory">
+    <h3>What is Statistical Learning Theory?</h3>
+    <p><span class="hl">Statistical Learning Theory (SLT)</span> is the mathematical framework that answers: "When and why does machine learning work?" It studies the conditions under which a learning algorithm can generalize from training data to unseen data.</p>
+    <p><strong>Core question:</strong> Given a training set of n examples, how much can we trust that a model's training accuracy reflects its true accuracy on new data? SLT gives us the theoretical tools (bounds, risk functions, VC dimension) to answer this.</p>
+
+    <h4>Key Statistical Concepts (Part A Ready)</h4>
+    <table class="tbl">
+      <tr><th>Concept</th><th>Definition</th><th>Why Important</th></tr>
+      <tr><td><span class="hl">Mean (μ)</span></td><td>Average value: μ = (1/n)·Σxᵢ</td><td>Central tendency of data — model's expected output</td></tr>
+      <tr><td><span class="hl">Variance (σ²)</span></td><td>σ² = (1/n)·Σ(xᵢ − μ)²</td><td>Spread of data — model's inconsistency across datasets</td></tr>
+      <tr><td><span class="hl">Standard Deviation (σ)</span></td><td>σ = √[Σ(xᵢ − μ)²/n]</td><td>Typical deviation from mean — feature scaling, model stability</td></tr>
+      <tr><td><span class="hl">MSE</span></td><td>MSE = (1/n)Σ(yᵢ − ŷᵢ)²</td><td>Regression loss — measures prediction error</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>Standard Deviation in ML (2025 Part A Q1 + Q8)</h3>
+    <p>Standard deviation tells us how <strong>spread out</strong> the data values are around the mean. In ML it is critical for:</p>
+    <ul>
+      <li><strong>Feature Scaling:</strong> Z-score normalization uses SD: z = (x − μ)/σ. Essential before KNN, SVM, PCA — they are distance-sensitive.</li>
+      <li><strong>Detecting outliers:</strong> Points beyond 3σ from mean are typically outliers.</li>
+      <li><strong>Measuring model stability:</strong> High SD in cross-validation scores → unstable model.</li>
+      <li><strong>Understanding data spread:</strong> High SD → diverse dataset → model must generalize more broadly.</li>
+    </ul>
+    <div class="fbox">
+      <span class="lbl">Variance and Standard Deviation — Formulas</span>
+      <div class="f">Mean: μ = (1/n) · Σᵢ xᵢ</div>
+      <div class="f">Variance: σ² = (1/n) · Σᵢ (xᵢ − μ)²</div>
+      <div class="f">Standard Deviation: σ = √σ²</div>
+      <div class="n">For a sample (not full population): use (n−1) denominator (Bessel's correction): s² = Σ(xᵢ − x̄)²/(n−1)</div>
+    </div>
+    <div class="ex">
+      <div class="ex-lbl">📌 Numerical — 2025 Part A Q8: Calculate variance and SD for {4, 2, 5, 8, 6}</div>
+      <pre>
+Data: 4, 2, 5, 8, 6   (n=5)
+
+Step 1: Mean
+μ = (4+2+5+8+6)/5 = 25/5 = 5
+
+Step 2: Deviations from mean
+x₁−μ = 4−5 = −1  →  (x₁−μ)² = 1
+x₂−μ = 2−5 = −3  →  (x₂−μ)² = 9
+x₃−μ = 5−5 =  0  →  (x₃−μ)² = 0
+x₄−μ = 8−5 =  3  →  (x₄−μ)² = 9
+x₅−μ = 6−5 =  1  →  (x₅−μ)² = 1
+
+Step 3: Variance
+σ² = (1+9+0+9+1)/5 = 20/5 = 4
+
+Step 4: Standard Deviation
+σ = √4 = 2
+
+Answer: Variance = 4, Standard Deviation = 2
+Interpretation: Values typically deviate 2 units from the mean of 5.
+</pre>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Bias-Variance Tradeoff — The Central Theorem of SLT</h3>
+    <p>The expected prediction error of any model can be decomposed into three parts:</p>
+    <div class="fbox">
+      <span class="lbl">Bias-Variance Decomposition (★ MUST KNOW ★)</span>
+      <div class="f">Expected Error = Bias² + Variance + Irreducible Noise</div>
+      <div class="f">E[(y − ŷ)²] = [E[ŷ] − y]² + E[(ŷ − E[ŷ])²] + σ²_noise</div>
+      <div class="n">Bias = error from wrong assumptions (underfitting). Variance = error from sensitivity to training data (overfitting). Noise = irreducible error in the data itself.</div>
+    </div>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>High Bias</th><th>High Variance</th></tr>
+      <tr><td>Model type</td><td>Too simple (underfitting)</td><td>Too complex (overfitting)</td></tr>
+      <tr><td>Training error</td><td>High</td><td>Low</td></tr>
+      <tr><td>Test error</td><td>High</td><td>High</td></tr>
+      <tr><td>Example</td><td>Linear model for non-linear data</td><td>Deep unpruned decision tree</td></tr>
+      <tr><td>Solution</td><td>More complex model, more features</td><td>Regularization, more data, pruning</td></tr>
+    </table>
+    <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection to Unit 2 — Decision Trees</div><p>Decision Trees (Unit 2) are high-variance models — a small change in training data can produce a completely different tree. Random Forest (Unit 2) reduces variance by averaging many trees. SVM is a low-variance model. This is why Unit 4's bias-variance theory directly explains why ensemble methods (Unit 2) work: they trade a tiny bit of bias for a large reduction in variance.</p></div></div>
+  </div>
+  <div class="theory">
+    <h3>Curse of Dimensionality</h3>
+    <p>The <span class="hl">curse of dimensionality</span> refers to phenomena that arise when analyzing data in high-dimensional spaces. As the number of features increases, the data becomes increasingly sparse, making learning harder.</p>
+    <ul>
+      <li><strong>Exponential data requirement:</strong> To maintain density, training data must grow exponentially with dimensions. With 10 features and 10 values each, you need 10¹⁰ examples for complete coverage.</li>
+      <li><strong>Distance loses meaning:</strong> In high dimensions, all pairwise distances converge to the same value — nearest neighbor becomes meaningless.</li>
+      <li><strong>Overfitting increases:</strong> More features = more model parameters = higher overfitting risk.</li>
+      <li><strong>Computational cost:</strong> O(d²) or O(d³) algorithms (like PCA) become expensive as d grows.</li>
+    </ul>
+    <h4>Solution: Dimensionality Reduction</h4>
+    <p>PCA, SVD, and feature selection (all in Unit 4) address the curse of dimensionality by reducing the number of features while preserving most information.</p>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 PYQs — Statistical Learning Theory</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is the significance of standard deviation in Machine Learning?</div>
+      <div class="pyq-meta">May 2025 · Part A Q1 · 2 marks</div>
+      <div class="pyq-topic">Topic: Standard Deviation in ML · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Standard deviation (σ)</strong> measures the spread/dispersion of data values around the mean. In ML it is significant because:<br><br>1. <strong>Feature Scaling:</strong> Used in Z-score normalization [z=(x−μ)/σ] before distance-based algorithms (KNN, SVM, PCA) where different feature scales would bias the model.<br>2. <strong>Outlier Detection:</strong> Values beyond ±3σ are typically flagged as outliers; used in data cleaning.<br>3. <strong>Model Stability:</strong> High SD in cross-validation accuracy scores indicates an unstable model with high variance.<br>4. <strong>Understanding data:</strong> Low SD = tightly clustered data (easy to learn); high SD = dispersed data (harder to classify).<br><br>Formula: σ = √[(1/n)·Σ(xᵢ−μ)²]</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Calculate the variance and standard deviation of: 4, 2, 5, 8, 6</div>
+      <div class="pyq-meta">May 2025 · Part A Q8 · 2 marks</div>
+      <div class="pyq-topic">Topic: Variance, Standard Deviation · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans">μ = (4+2+5+8+6)/5 = 25/5 = <strong>5</strong><br><br>Deviations²: (4−5)²=1, (2−5)²=9, (5−5)²=0, (8−5)²=9, (6−5)²=1<br><br>Variance σ² = (1+9+0+9+1)/5 = 20/5 = <strong>4</strong><br><br>Standard Deviation σ = √4 = <strong>2</strong></div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is curse of dimensionality and how can unsupervised learning help with it? Discuss various dimensionality reduction techniques.</div>
+      <div class="pyq-meta">Aug 2023 · Part B Q4 · 4+4 marks</div>
+      <div class="pyq-topic">Topic: Curse of Dimensionality, Dimensionality Reduction · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Curse of Dimensionality:</strong> As the number of features/dimensions increases, the volume of the feature space grows exponentially, causing data to become increasingly sparse. Problems: (1) exponential data needed to maintain coverage, (2) distance metrics lose meaning (all distances become equal), (3) increased overfitting risk, (4) increased computational cost.<br><br><strong>How unsupervised learning helps:</strong> Unsupervised methods discover structure in unlabelled data to compress the feature space without needing class labels.<br>• <strong>K-means clustering:</strong> Groups similar features or data points, enabling cluster-based representation<br>• <strong>Autoencoders:</strong> Learn compressed latent representations<br>• <strong>PCA / SVD:</strong> Project data to lower-dimensional space preserving maximum variance<br><br><strong>Dimensionality Reduction Techniques:</strong><br>1. <strong>PCA (Principal Component Analysis):</strong> Linear transformation → orthogonal principal components ranked by variance. Most popular.<br>2. <strong>SVD (Singular Value Decomposition):</strong> Factorizes matrix A=UΣVᵀ; basis for PCA and LSA.<br>3. <strong>LDA (Linear Discriminant Analysis):</strong> Supervised reduction — maximizes between-class, minimizes within-class scatter.<br>4. <strong>t-SNE:</strong> Non-linear; preserves local structure; used for visualization.<br>5. <strong>Autoencoders:</strong> Neural network encoder-decoder; non-linear compression.<br>6. <strong>Feature Selection:</strong> Filter/Wrapper/Embedded methods — selects subset of original features.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PCA ═══ -->
+<section class="section" id="pca">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <h2 class="sec-title">Principal Component Analysis (PCA)</h2>
+    <span class="ipill hb hb-r">🔥 90% — Asked Every Year</span>
+  </div>
+  <div class="theory">
+    <h3>What is PCA? (From Scratch)</h3>
+    <p><span class="hl">PCA (Principal Component Analysis)</span> is an <strong>unsupervised, linear dimensionality reduction technique</strong> that transforms a dataset with many features into a smaller set of <em>uncorrelated</em> features called <strong>Principal Components (PCs)</strong>, while preserving as much variance (information) as possible.</p>
+    <p><strong>Intuition:</strong> You have photos of a 3D object taken from thousands of angles. Most angles contain redundant information. PCA finds the 2–3 "best viewing angles" that capture the most variation. These are the principal components — they explain the data with far fewer dimensions.</p>
+    <p><strong>When to use PCA:</strong> When features are highly correlated, when you need to reduce computational cost, when you want to visualize high-dimensional data in 2D/3D, and as preprocessing before KNN, SVM, or neural networks.</p>
+    <div class="diag">
+      <svg viewBox="0 0 560 180" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- Original data cloud (elliptical) -->
+        <ellipse cx="140" cy="90" rx="80" ry="50" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5" transform="rotate(-30,140,90)"/>
+        <text x="60" y="18" fill="#c4b5fd" font-family="IBM Plex Mono" font-size="10">Original 2D Data</text>
+        <!-- PC1 axis -->
+        <line x1="70" y1="130" x2="210" y2="50" stroke="#a78bfa" stroke-width="2.5"/>
+        <text x="215" y="48" fill="#a78bfa" font-family="IBM Plex Mono" font-size="10">PC1 (max variance)</text>
+        <!-- PC2 axis (perpendicular) -->
+        <line x1="100" y1="50" x2="180" y2="130" stroke="#60a5fa" stroke-width="1.5" stroke-dasharray="5,4"/>
+        <text x="182" y="130" fill="#60a5fa" font-family="IBM Plex Mono" font-size="10">PC2</text>
+        <!-- Scattered points on original space -->
+        <circle cx="120" cy="100" r="3" fill="#a78bfa"/>
+        <circle cx="145" cy="80" r="3" fill="#a78bfa"/>
+        <circle cx="160" cy="70" r="3" fill="#a78bfa"/>
+        <circle cx="130" cy="95" r="3" fill="#a78bfa"/>
+        <circle cx="155" cy="85" r="3" fill="#a78bfa"/>
+        <circle cx="110" cy="110" r="3" fill="#a78bfa"/>
+        <circle cx="170" cy="65" r="3" fill="#a78bfa"/>
+        <!-- Arrow -->
+        <path d="M240,90 L310,90" stroke="#4b6080" stroke-width="2" marker-end="url(#arrowU4)"/>
+        <text x="260" y="82" fill="#4b6080" font-family="IBM Plex Mono" font-size="10">PCA</text>
+        <defs><marker id="arrowU4" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#4b6080"/></marker></defs>
+        <!-- Projected 1D line -->
+        <line x1="330" y1="90" x2="520" y2="90" stroke="#a78bfa" stroke-width="2.5"/>
+        <text x="330" y="72" fill="#c4b5fd" font-family="IBM Plex Mono" font-size="10">1D Projection (PC1 only)</text>
+        <circle cx="355" cy="90" r="4" fill="#a78bfa"/>
+        <circle cx="380" cy="90" r="4" fill="#a78bfa"/>
+        <circle cx="400" cy="90" r="4" fill="#a78bfa"/>
+        <circle cx="420" cy="90" r="4" fill="#a78bfa"/>
+        <circle cx="445" cy="90" r="4" fill="#a78bfa"/>
+        <circle cx="465" cy="90" r="4" fill="#a78bfa"/>
+        <circle cx="490" cy="90" r="4" fill="#a78bfa"/>
+        <text x="380" y="115" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">2D → 1D: 50% fewer features</text>
+      </svg>
+      <div class="diag-cap">Fig 2.1 — PCA projects data onto PC1 (direction of maximum variance), reducing from 2D to 1D while keeping most information.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>PCA Algorithm — Full Steps (★ Write All 6 Steps ★)</h3>
+    <div class="steps">
+      <div class="step"><div class="sn">1</div><div class="st"><strong>Standardize the data:</strong> For each feature, compute Z-score: xᵢ_norm = (xᵢ − μᵢ)/σᵢ. This ensures all features have mean=0, SD=1. Essential — PCA is sensitive to scale.</div></div>
+      <div class="step"><div class="sn">2</div><div class="st"><strong>Compute Covariance Matrix:</strong> C = (1/(n−1)) · XᵀX where X is the mean-centered data matrix. The (i,j) entry = covariance between feature i and j.</div></div>
+      <div class="step"><div class="sn">3</div><div class="st"><strong>Compute Eigenvalues and Eigenvectors</strong> of the covariance matrix C: C·v = λ·v where λ = eigenvalue, v = eigenvector (principal direction).</div></div>
+      <div class="step"><div class="sn">4</div><div class="st"><strong>Sort by Eigenvalue:</strong> Rank eigenvectors by their eigenvalues in descending order. Largest eigenvalue → PC1 (explains most variance), second largest → PC2, etc.</div></div>
+      <div class="step"><div class="sn">5</div><div class="st"><strong>Select k components:</strong> Choose top k eigenvectors (components) that explain ≥ 95% of total variance. Form matrix W = [v₁ | v₂ | ... | vₖ] (d×k).</div></div>
+      <div class="step"><div class="sn">6</div><div class="st"><strong>Project the data:</strong> Z = X · W. Now Z is the reduced dataset with k features instead of d (d >> k).</div></div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">PCA — Key Formulas (★ All Must Be in Your Answer ★)</span>
+      <div class="f">Covariance Matrix: C = (1/n−1) · XᵀX   (d×d matrix)</div>
+      <div class="f">Eigendecomposition: C = VΛVᵀ   where Λ = diagonal matrix of eigenvalues</div>
+      <div class="f">Variance explained by PCᵢ = λᵢ / Σλⱼ × 100%</div>
+      <div class="f">Projection: Z = X · V_k   (n×d matrix → n×k matrix)</div>
+      <div class="n">The eigenvectors (principal components) are orthogonal to each other — they capture independent directions of variation in the data.</div>
+    </div>
+    <h4>Scree Plot — Choosing k</h4>
+    <p>A <span class="hl">scree plot</span> shows eigenvalues in decreasing order. Choose k where the curve "elbows" — beyond that point, additional components explain very little variance. Common rule: keep components until cumulative variance ≥ 95%.</p>
+  </div>
+  <div class="theory">
+    <h3>PCA Example — 2D to 1D</h3>
+    <div class="ex">
+      <div class="ex-lbl">📌 Simple PCA Worked Example</div>
+      <pre>
+Original data (3 points, 2 features: Height, Weight):
+Point 1: (170, 65)
+Point 2: (180, 75)
+Point 3: (160, 55)
+
+Step 1: Compute means
+μ_height = (170+180+160)/3 = 170
+μ_weight = (65+75+55)/3 = 65
+
+Step 2: Center the data (subtract mean)
+X_centered:
+Point 1: (170−170, 65−65) = (0, 0)
+Point 2: (180−170, 75−65) = (10, 10)
+Point 3: (160−170, 55−65) = (−10, −10)
+
+Step 3: Covariance matrix (2×2)
+C = (1/(n−1)) · XᵀX
+Σx² = 0+100+100 = 200, Σy² = 0+100+100 = 200, Σxy = 0+100+100 = 200
+C = (1/2) × [[200, 200], [200, 200]] = [[100, 100], [100, 100]]
+
+Step 4: Eigenvalues
+det(C − λI) = 0
+(100−λ)² − 100² = 0  → (100−λ)² = 100² → 100−λ = ±100
+λ₁ = 200 (PC1), λ₂ = 0 (PC2)
+
+Step 5: Eigenvectors
+For λ₁=200: v₁ = [1/√2, 1/√2] ≈ [0.707, 0.707]
+For λ₂=0:   v₂ = [1/√2, −1/√2]
+
+Step 6: PC1 explains λ₁/(λ₁+λ₂) = 200/200 = 100% of variance!
+→ Data is perfectly 1D along the (Height+Weight) diagonal.
+
+Projection onto PC1:
+z₁ = 0×0.707 + 0×0.707 = 0
+z₂ = 10×0.707 + 10×0.707 = 14.14
+z₃ = −10×0.707 + (−10)×0.707 = −14.14
+
+Result: 2D data → 1D with zero information loss!
+</pre>
+    </div>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">PCA Exam Validation Trick</div><p>Always verify: (1) Number of principal components ≤ min(n, d). (2) Sum of all eigenvalues = trace of covariance matrix = sum of feature variances. (3) PC1 variance explained should be the highest. (4) All principal components are orthogonal — dot product of any two = 0. If your eigenvectors v₁ and v₂ satisfy v₁·v₂ ≠ 0, you made an error.</p></div></div>
+  </div>
+  <div class="theory">
+    <h3>Advantages & Disadvantages of PCA</h3>
+    <table class="tbl">
+      <tr><th>Advantages</th><th>Disadvantages</th></tr>
+      <tr><td>Reduces overfitting by eliminating redundant features</td><td>Components are hard to interpret (not original features)</td></tr>
+      <tr><td>Removes multicollinearity (correlated features)</td><td>Assumes linear relationships only</td></tr>
+      <tr><td>Speeds up training (fewer features)</td><td>Sensitive to outliers — can distort principal components</td></tr>
+      <tr><td>Enables 2D/3D visualization of high-dim data</td><td>Requires feature scaling first</td></tr>
+      <tr><td>Unsupervised — no labels needed</td><td>Information loss (though usually small)</td></tr>
+    </table>
+    <h4>PCA Applications (RTU Filler Theory)</h4>
+    <ul>
+      <li><strong>Face recognition:</strong> Eigenfaces — each face is a combination of principal "face components"</li>
+      <li><strong>Recommendation systems:</strong> SVD (related to PCA) used in Netflix-style recommenders</li>
+      <li><strong>Genomics:</strong> Reducing thousands of gene expression features to 10–20 PCs</li>
+      <li><strong>Image compression:</strong> Store only top-k principal components instead of all pixels</li>
+      <li><strong>Finance:</strong> Finding key risk factors from hundreds of correlated stock prices</li>
+    </ul>
+    <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection — PCA and K-Means (Unit 3)</div><p>PCA and K-means both deal with unlabelled data and find structure. PCA finds directions of maximum variance (global structure). K-means finds cluster centers (local structure). A common pipeline: apply PCA first to reduce dimensions, then run K-means on the reduced data. The 2023 exam question asks directly: "What is the relationship between K-means and PCA?" Answer: Both can be viewed as matrix factorization problems. PCA projects data to minimize reconstruction error; K-means assigns cluster labels to minimize within-cluster variance. Running K-means on PCA-reduced data is more efficient and often more accurate.</p></div></div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 PYQs — PCA</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is PCA? When do you use it?</div>
+      <div class="pyq-meta">Aug 2023 · Part A Q5 · 2 marks</div>
+      <div class="pyq-topic">Topic: PCA Definition · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>PCA (Principal Component Analysis)</strong> is an unsupervised linear dimensionality reduction technique that transforms correlated features into a smaller set of uncorrelated features called principal components, ranked by the variance they explain.<br><br><strong>When to use PCA:</strong><br>1. When features are highly correlated (multicollinearity)<br>2. When dimensionality is very high (curse of dimensionality)<br>3. When you need to visualize data in 2D/3D<br>4. As preprocessing before KNN, SVM, or neural networks<br>5. When training is too slow due to too many features</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is the use of PCA in Machine Learning? Give the steps of PCA algorithm.</div>
+      <div class="pyq-meta">2024 · Part B Q7 · 4 marks | May 2025 · Part B Q7</div>
+      <div class="pyq-topic">Topic: PCA Use + Algorithm · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Use of PCA in ML:</strong><br>1. <strong>Dimensionality reduction:</strong> Reduces d features to k components (k≪d) while preserving 95%+ variance<br>2. <strong>Removes multicollinearity:</strong> PCs are orthogonal — no redundancy<br>3. <strong>Noise reduction:</strong> Low-variance components often capture noise; dropping them improves model quality<br>4. <strong>Visualization:</strong> Project to 2D/3D to visualize high-dimensional data<br>5. <strong>Preprocessing:</strong> Speeds up downstream algorithms by reducing feature count<br><br><strong>Steps of PCA Algorithm:</strong><br>Step 1: Standardize data — compute z-score for each feature: z = (x−μ)/σ<br>Step 2: Compute covariance matrix C = (1/n−1)·XᵀX<br>Step 3: Compute eigenvalues (λᵢ) and eigenvectors (vᵢ) of C<br>Step 4: Sort eigenvectors by eigenvalues in descending order<br>Step 5: Select top k eigenvectors (those explaining ≥95% variance)<br>Step 6: Project data: Z = X·Vₖ (n×d → n×k)<br><br>The variance explained by PCᵢ = λᵢ/Σλⱼ × 100%</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain Principal Component Analysis (PCA) in machine learning? How to evaluate machine learning algorithm?</div>
+      <div class="pyq-meta">May 2025 · Part C Q3 · 10 marks</div>
+      <div class="pyq-topic">Topic: PCA + Model Evaluation · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>PCA in Machine Learning:</strong><br>PCA is a linear, unsupervised dimensionality reduction method. It identifies directions (principal components) of maximum variance in the data and projects the data onto these directions.<br><br><strong>Algorithm (6 steps as above)</strong><br>Key formulas: C = XᵀX/(n−1), C·v = λ·v, Z = X·Vₖ<br>Variance explained by PCᵢ = λᵢ/Σλⱼ<br><br><strong>Example:</strong> PCA applied to face recognition (Eigenfaces). Each face image (d=10,000 pixels) is reduced to k=100 principal components. The top components capture the most common facial variations (lighting, expression, identity). A new face is classified by comparing its PCA projection to stored projections.<br><br><strong>Advantages:</strong> Reduces overfitting, speeds training, removes correlated features<br><strong>Limitations:</strong> Linear only, components not interpretable, sensitive to scaling<br><br><strong>How to Evaluate ML Algorithms:</strong><br>See Section 05 (Model Evaluation) below for the complete answer with all metrics.</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain the concept of Principal Component Analysis with a suitable example.</div>
+      <div class="pyq-meta">June 2022 · Part B Q4a · 8 marks</div>
+      <div class="pyq-topic">Topic: PCA with Example · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans">Use the full explanation + worked 2D→1D example above. For 8 marks, include all 6 steps with formulas, the covariance matrix derivation, and eigenvalue interpretation. End with: "PC1 explains [X]% of variance. We project the data onto PC1, reducing from 2D to 1D while retaining most information."<br><br>Also draw the diagram: original 2D data cloud with PC1 and PC2 axes, then the 1D projection. Mention that PC1 and PC2 are orthogonal (perpendicular).</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. What is the motivation behind Gaussian Mixture Model? What is the relationship between k-means and PCA?</div>
+      <div class="pyq-meta">Aug 2023 · Part B Q3 · 4+4 marks</div>
+      <div class="pyq-topic">Topic: GMM, K-Means vs PCA · Unit 3+4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Relationship between K-Means and PCA:</strong><br><br>Both K-means and PCA can be viewed as forms of matrix factorization / data compression, but they work differently:<br><br><strong>Similarities:</strong><br>• Both are unsupervised — no labels required<br>• Both aim to find a compact representation of data<br>• Both can be viewed as approximating the data covariance structure<br><br><strong>Differences:</strong><br>• PCA finds continuous linear projections (principal axes) that maximize variance<br>• K-means finds discrete cluster assignments that minimize within-cluster variance<br>• PCA output: coordinates in PC space (real numbers)<br>• K-means output: cluster labels (integers)<br><br><strong>Connection in practice:</strong><br>Running K-means on PCA-reduced data is a very common pipeline: PCA first removes noise and correlation, then K-means finds cleaner clusters in the reduced space. This is called "spectral clustering" when eigendecomposition of the similarity matrix is used instead of covariance matrix.<br><br>Mathematically: K-means finds cluster means μₖ such that Σᵢ ||xᵢ − μₖᵢ||² is minimized. PCA finds projection W such that ||X − XWWᵀ||² (reconstruction error) is minimized. Both minimize a squared distance objective.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SVD ═══ -->
+<section class="section" id="svd">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <h2 class="sec-title">Singular Value Decomposition (SVD)</h2>
+    <span class="ipill hb hb-a">75% · Part A/B</span>
+  </div>
+  <div class="theory">
+    <h3>What is SVD?</h3>
+    <p><span class="hl">Singular Value Decomposition (SVD)</span> is a matrix factorization technique that decomposes any real matrix A into three matrices. It is the generalization of eigendecomposition to non-square matrices and is the mathematical foundation of PCA.</p>
+    <p><strong>Intuition:</strong> SVD is like discovering the "skeleton" of a matrix — the most important structural components. You can discard the less important parts and still reconstruct a good approximation of the original.</p>
+    <div class="fbox">
+      <span class="lbl">SVD Decomposition Formula (★ MUST MEMORIZE ★)</span>
+      <div class="f">A = U · Σ · Vᵀ</div>
+      <div class="f">where: A is an m×n matrix</div>
+      <div class="f">U = m×m orthogonal matrix (left singular vectors — column patterns)</div>
+      <div class="f">Σ = m×n diagonal matrix (singular values σ₁ ≥ σ₂ ≥ ... ≥ σᵣ ≥ 0)</div>
+      <div class="f">Vᵀ = n×n orthogonal matrix (right singular vectors — row patterns)</div>
+      <div class="n">U and V columns are orthonormal. Σ is diagonal with non-negative singular values on diagonal.</div>
+    </div>
+    <h4>Relationship between SVD and PCA</h4>
+    <div class="fbox">
+      <div class="f">If X is mean-centered (zero mean), then:</div>
+      <div class="f">XᵀX = V · Σ² · Vᵀ  (eigendecomposition of covariance matrix)</div>
+      <div class="f">PCA principal components = right singular vectors V of X</div>
+      <div class="f">PCA eigenvalues = σᵢ² (squares of singular values)</div>
+      <div class="n">PCA = SVD applied to the mean-centered data matrix. SVD is more numerically stable than computing eigenvalues of XᵀX directly.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Truncated SVD — Low-Rank Approximation</h3>
+    <p>Instead of using all singular values, we keep only the top k largest ones. This gives the best rank-k approximation of A:</p>
+    <div class="fbox">
+      <span class="lbl">Low-Rank Approximation (Truncated SVD)</span>
+      <div class="f">Aₖ = U_k · Σ_k · Vₖᵀ</div>
+      <div class="f">where U_k = first k columns of U, Σ_k = top k×k block, Vₖᵀ = first k rows of Vᵀ</div>
+      <div class="n">By Eckart-Young theorem: Aₖ is the best rank-k approximation of A in terms of Frobenius norm.</div>
+    </div>
+    <h4>Applications of SVD (2023 Part A Q6 — "Define SVD + Applications")</h4>
+    <table class="tbl">
+      <tr><th>Application</th><th>How SVD is Used</th></tr>
+      <tr><td><span class="hl">Recommender Systems</span></td><td>Matrix completion — fill missing user-item ratings using low-rank SVD approximation (Netflix Prize)</td></tr>
+      <tr><td><span class="hl">Image Compression</span></td><td>Store top-k singular values instead of all pixels. Image = U_k·Σ_k·Vₖᵀ (much smaller storage)</td></tr>
+      <tr><td><span class="hl">Latent Semantic Analysis (LSA)</span></td><td>NLP: SVD on term-document matrix reveals latent topics (semantic meaning)</td></tr>
+      <tr><td><span class="hl">Noise Reduction</span></td><td>Small singular values correspond to noise; dropping them cleans the signal</td></tr>
+      <tr><td><span class="hl">PCA Implementation</span></td><td>Numerically stable PCA computation (preferred over direct eigendecomposition)</td></tr>
+      <tr><td><span class="hl">Pseudo-inverse</span></td><td>A⁺ = V·Σ⁺·Uᵀ used to solve overdetermined/underdetermined linear systems</td></tr>
+    </table>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 PYQs — SVD</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Define SVD. Also write their applications.</div>
+      <div class="pyq-meta">Aug 2023 · Part A Q6 · 2 marks</div>
+      <div class="pyq-topic">Topic: SVD Definition + Applications · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Singular Value Decomposition (SVD):</strong> A matrix factorization that decomposes any real matrix A (m×n) into three matrices:<br>A = U·Σ·Vᵀ<br>• U = m×m orthogonal matrix (left singular vectors)<br>• Σ = m×n diagonal matrix (singular values σ₁≥σ₂≥...≥0)<br>• Vᵀ = n×n orthogonal matrix (right singular vectors)<br><br><strong>Applications:</strong><br>1. Recommender systems (collaborative filtering — filling missing ratings)<br>2. Image compression (store top-k singular triplets)<br>3. Latent Semantic Analysis in NLP<br>4. Noise reduction in signals<br>5. Computing PCA numerically (more stable)<br>6. Solving least squares problems via pseudo-inverse</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURE SELECTION ═══ -->
+<section class="section" id="feature-selection">
+  <div class="sec-head">
+    <span class="sec-num">04</span>
+    <h2 class="sec-title">Feature Selection Methods</h2>
+    <span class="ipill hb hb-v">80% · Part A + B</span>
+  </div>
+  <div class="theory">
+    <h3>What is Feature Selection?</h3>
+    <p><span class="hl">Feature Selection</span> is the process of selecting a subset of relevant features from the original feature set. Unlike PCA (which transforms features), feature selection keeps the original features — just fewer of them.</p>
+    <p><strong>Why do it:</strong> Removing irrelevant/redundant features reduces overfitting, speeds up training, improves interpretability, and avoids the curse of dimensionality.</p>
+    <h4>Feature Ranking</h4>
+    <p>Before selecting features, we rank them by some importance score. Common ranking criteria:</p>
+    <ul>
+      <li><strong>Correlation with target:</strong> Pearson correlation |corr(xᵢ, y)| — higher = more relevant</li>
+      <li><strong>Information Gain:</strong> IG(xᵢ, y) from decision tree splitting (Unit 2 connection!)</li>
+      <li><strong>Chi-squared test:</strong> χ² test for categorical features — measures dependence on class</li>
+      <li><strong>Mutual Information:</strong> I(X;Y) = H(Y) − H(Y|X) — how much knowing X reduces uncertainty about Y</li>
+    </ul>
+  </div>
+  <div class="theory">
+    <h3>Three Main Feature Selection Categories (★ RTU Favourite ★)</h3>
+    <div class="diag">
+      <svg viewBox="0 0 560 140" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- Filter -->
+        <rect x="20" y="30" width="155" height="80" rx="8" fill="#18243a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="97" y="55" text-anchor="middle" fill="#f59e0b" font-family="Syne" font-size="13" font-weight="700">Filter Methods</text>
+        <text x="97" y="73" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Model-independent</text>
+        <text x="97" y="87" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Stat score → rank</text>
+        <text x="97" y="100" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Fast. No model needed.</text>
+        <!-- Wrapper -->
+        <rect x="200" y="30" width="155" height="80" rx="8" fill="#18243a" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="277" y="55" text-anchor="middle" fill="#a78bfa" font-family="Syne" font-size="13" font-weight="700">Wrapper Methods</text>
+        <text x="277" y="73" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Uses actual model</text>
+        <text x="277" y="87" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Search over subsets</text>
+        <text x="277" y="100" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Slow. Best accuracy.</text>
+        <!-- Embedded -->
+        <rect x="382" y="30" width="155" height="80" rx="8" fill="#18243a" stroke="#10b981" stroke-width="1.5"/>
+        <text x="459" y="55" text-anchor="middle" fill="#10b981" font-family="Syne" font-size="13" font-weight="700">Embedded Methods</text>
+        <text x="459" y="73" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Feature selection during</text>
+        <text x="459" y="87" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">model training itself</text>
+        <text x="459" y="100" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Balanced speed+accuracy</text>
+        <text x="97" y="125" text-anchor="middle" fill="#f59e0b" font-family="IBM Plex Mono" font-size="9">Chi², Correlation, MI</text>
+        <text x="277" y="125" text-anchor="middle" fill="#a78bfa" font-family="IBM Plex Mono" font-size="9">RFE, Forward/Backward</text>
+        <text x="459" y="125" text-anchor="middle" fill="#10b981" font-family="IBM Plex Mono" font-size="9">LASSO, Ridge, Tree importance</text>
+      </svg>
+      <div class="diag-cap">Fig 4.1 — Three categories of Feature Selection Methods</div>
+    </div>
+    <h4>1. Filter Methods</h4>
+    <p>Filter methods rank features using <strong>statistical scores independent of any ML model</strong>. They are fast and scalable but don't consider feature interactions.</p>
+    <ul>
+      <li><strong>Pearson Correlation:</strong> Select features with |corr| > threshold. For regression. Misses non-linear relationships.</li>
+      <li><strong>Chi-squared (χ²) test:</strong> For classification with categorical features. Tests if feature and class are independent. Higher χ² = more relevant.</li>
+      <li><strong>Information Gain / Mutual Information:</strong> IG(X,Y) = H(Y) − H(Y|X). Used in decision trees as splitting criterion.</li>
+      <li><strong>Variance threshold:</strong> Remove features with variance below threshold — low variance = low information.</li>
+      <li><strong>ANOVA F-score:</strong> For numerical features in classification. Tests mean difference across classes.</li>
+    </ul>
+    <h4>2. Wrapper Methods</h4>
+    <p>Wrapper methods use an <strong>actual ML model to evaluate feature subsets</strong>. They search over different combinations of features and pick the subset that gives the best cross-validation accuracy. Slow but typically gives best results.</p>
+    <ul>
+      <li><strong>Forward Selection:</strong> Start with no features. Add one feature at a time (the one that improves accuracy most). Stop when no improvement.</li>
+      <li><strong>Backward Elimination:</strong> Start with all features. Remove one at a time (the least important). Stop when accuracy drops.</li>
+      <li><strong>Recursive Feature Elimination (RFE):</strong> Train model → rank features by importance → remove weakest → repeat. Used with SVM, linear models.</li>
+      <li><strong>Exhaustive Search:</strong> Try all 2ᵈ subsets → find optimal. Computationally infeasible for large d.</li>
+    </ul>
+    <h4>3. Embedded Methods</h4>
+    <p>Embedded methods perform feature selection <strong>as part of the model training process</strong> itself. They combine the benefits of filter (speed) and wrapper (model-specific accuracy).</p>
+    <ul>
+      <li><strong>LASSO (L1 Regularization):</strong> Adds λ·Σ|βᵢ| penalty to regression loss. Forces irrelevant feature weights to exactly zero → automatic selection.</li>
+      <li><strong>Ridge (L2 Regularization):</strong> Adds λ·Σβᵢ² penalty. Shrinks weights but doesn't zero them (not true selection — more of regularization).</li>
+      <li><strong>Decision Tree / Random Forest Importance:</strong> Feature importance = total reduction in Gini/entropy from that feature across all splits and all trees.</li>
+      <li><strong>Elastic Net:</strong> Combines L1 + L2: λ₁·Σ|βᵢ| + λ₂·Σβᵢ². Best of both.</li>
+    </ul>
+    <div class="fbox">
+      <span class="lbl">LASSO vs Ridge vs Elastic Net</span>
+      <div class="f">Ridge (L2):    minimize Σ(yᵢ−ŷᵢ)² + λ·Σβⱼ²      → shrinks weights, no zeroing</div>
+      <div class="f">LASSO (L1):    minimize Σ(yᵢ−ŷᵢ)² + λ·Σ|βⱼ|    → zeros out weak features</div>
+      <div class="f">Elastic Net:   minimize Σ(yᵢ−ŷᵢ)² + λ₁·Σ|βⱼ| + λ₂·Σβⱼ² → best of both</div>
+      <div class="n">LASSO is feature selection. Ridge is regularization. Use LASSO when you expect few relevant features. Use Ridge when you expect many small effects.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Comparison Table — Filter vs Wrapper vs Embedded</h3>
+    <table class="tbl">
+      <tr><th>Aspect</th><th>Filter</th><th>Wrapper</th><th>Embedded</th></tr>
+      <tr><td>Approach</td><td>Statistical score</td><td>Model evaluation</td><td>Built into training</td></tr>
+      <tr><td>Speed</td><td>⚡ Fast</td><td>🐌 Slow</td><td>⚡ Medium</td></tr>
+      <tr><td>Model dependence</td><td>None</td><td>High</td><td>Model-specific</td></tr>
+      <tr><td>Feature interactions</td><td>Ignores</td><td>Considers</td><td>Partially</td></tr>
+      <tr><td>Overfitting risk</td><td>Low</td><td>High (many runs)</td><td>Low</td></tr>
+      <tr><td>Examples</td><td>χ², Pearson, IG, ANOVA</td><td>RFE, Fwd/Bwd selection</td><td>LASSO, Random Forest</td></tr>
+      <tr><td>When to use</td><td>Large dataset, quick screening</td><td>Small dataset, accuracy crucial</td><td>Need speed + model awareness</td></tr>
+    </table>
+    <div class="tip trick"><div class="ti">⚡</div><div class="tb"><div class="ttl">Memory Trick — Filter/Wrapper/Embedded</div><p><strong>FILTER</strong> = like filtering water through a mesh — independent of what you'll drink (model), just removes impurities by statistics. <strong>WRAPPER</strong> = you "wrap" the model around the selection process — feature subsets are tested by actually running the model. <strong>EMBEDDED</strong> = selection is "embedded" into the training — the model automatically handles it (LASSO zeros irrelevant weights during training). For exam: 1 sentence + 1 example for each = 2 marks each = 6 marks total.</p></div></div>
+    <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection to Unit 2 — Decision Trees + SVM</div><p>Information Gain (filter method) is the exact same formula used by the ID3 Decision Tree algorithm (Unit 2) to select splitting features! So Decision Tree training IS feature selection via the filter approach. LASSO (embedded) is a regularized extension of Linear Regression (Unit 2). RFE (wrapper) commonly uses SVM as the scoring model. Feature selection in Unit 4 directly improves all supervised algorithms in Unit 2.</p></div></div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 PYQs — Feature Selection</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain the concept of feature selection used in Machine Learning.</div>
+      <div class="pyq-meta">May 2025 · Part B Q4 · 4 marks</div>
+      <div class="pyq-topic">Topic: Feature Selection Methods · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Feature Selection</strong> is the process of identifying and selecting a subset of the most informative original features for model training, removing redundant or irrelevant ones.<br><br><strong>Goals:</strong> Reduce overfitting, decrease training time, improve model interpretability, avoid curse of dimensionality.<br><br><strong>Three Categories:</strong><br><br><strong>1. Filter Methods</strong> (model-independent, fast):<br>Rank features by statistical scores (chi-squared, information gain, correlation) independent of any model. Select top-k features above threshold.<br>Example: Chi-squared test to select relevant features for a spam classifier.<br><br><strong>2. Wrapper Methods</strong> (model-dependent, slow):<br>Search over feature subsets by training and evaluating a model on each subset. Choose subset with best cross-validation accuracy.<br>Types: Forward selection (add one at a time), Backward elimination (remove one at a time), RFE (Recursive Feature Elimination).<br>Example: RFE with SVM — train SVM, rank features by weight magnitude, remove smallest, repeat.<br><br><strong>3. Embedded Methods</strong> (done during training):<br>Feature selection is built into the model's learning process.<br>LASSO regression adds L1 penalty (λΣ|βᵢ|) — drives irrelevant feature weights to zero.<br>Random Forest provides feature_importance scores based on Gini reduction.<br><br>Filter is fastest but ignores interactions. Wrapper is most accurate but slow. Embedded balances both.</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Define attribute selection measure in classification.</div>
+      <div class="pyq-meta">2024 · Part A Q6 · 2 marks</div>
+      <div class="pyq-topic">Topic: Attribute Selection Measure · Unit 2/4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Attribute Selection Measure (ASM)</strong> is a heuristic used in decision tree algorithms to determine the best attribute (feature) for splitting a node, maximizing data homogeneity in child nodes.<br><br>Two main measures:<br>1. <strong>Information Gain (ID3/C4.5):</strong> IG(S,A) = H(S) − Σᵥ(|Sᵥ|/|S|)·H(Sᵥ). Select attribute with max IG. Biased towards attributes with many values.<br>2. <strong>Gini Index (CART):</strong> Gini(S) = 1 − Σpᵢ². Select attribute with minimum weighted Gini. Favors binary splits.<br><br>These measures guide which feature is used at each tree node — essentially a filter-type feature selection integrated into the Decision Tree algorithm.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MODEL EVALUATION ═══ -->
+<section class="section" id="evaluation">
+  <div class="sec-head">
+    <span class="sec-num">05</span>
+    <h2 class="sec-title">Evaluating ML Algorithms &amp; Model Selection</h2>
+    <span class="ipill hb hb-r">🔥 85% — AUC-ROC is a 15-mark question</span>
+  </div>
+  <div class="theory">
+    <h3>The Confusion Matrix — Foundation of All Metrics</h3>
+    <p>A <span class="hl">Confusion Matrix</span> is a 2×2 table (for binary classification) that breaks down predictions into four categories:</p>
+    <div class="diag">
+      <svg viewBox="0 0 420 200" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- Grid -->
+        <rect x="120" y="50" width="140" height="70" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="260" y="50" width="140" height="70" fill="rgba(244,63,94,0.1)" stroke="#f43f5e" stroke-width="1.5"/>
+        <rect x="120" y="120" width="140" height="70" fill="rgba(244,63,94,0.1)" stroke="#f43f5e" stroke-width="1.5"/>
+        <rect x="260" y="120" width="140" height="70" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="1.5"/>
+        <!-- Labels -->
+        <text x="210" y="90" text-anchor="middle" fill="#10b981" font-family="Syne" font-size="14" font-weight="700">TP</text>
+        <text x="210" y="108" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">True Positive</text>
+        <text x="350" y="90" text-anchor="middle" fill="#f43f5e" font-family="Syne" font-size="14" font-weight="700">FP</text>
+        <text x="350" y="108" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">False Positive</text>
+        <text x="210" y="158" text-anchor="middle" fill="#f43f5e" font-family="Syne" font-size="14" font-weight="700">FN</text>
+        <text x="210" y="176" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">False Negative</text>
+        <text x="350" y="158" text-anchor="middle" fill="#10b981" font-family="Syne" font-size="14" font-weight="700">TN</text>
+        <text x="350" y="176" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">True Negative</text>
+        <!-- Axis labels -->
+        <text x="280" y="35" text-anchor="middle" fill="#c4b5fd" font-family="IBM Plex Mono" font-size="10">Predicted</text>
+        <text x="210" y="28" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="9">Positive</text>
+        <text x="350" y="28" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="9">Negative</text>
+        <text x="60" y="90" text-anchor="middle" fill="#c4b5fd" font-family="IBM Plex Mono" font-size="10">Actual</text>
+        <text x="60" y="108" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="9">Positive</text>
+        <text x="60" y="158" text-anchor="middle" fill="#60a5fa" font-family="IBM Plex Mono" font-size="9">Negative</text>
+        <text x="10" y="125" fill="#a78bfa" font-size="11" writing-mode="tb">Actual</text>
+      </svg>
+      <div class="diag-cap">Fig 5.1 — Confusion Matrix. TP and TN are correct predictions; FP and FN are errors.</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">All Evaluation Metrics from Confusion Matrix (★★★ MEMORIZE ALL ★★★)</span>
+      <div class="f">Accuracy  = (TP + TN) / (TP + TN + FP + FN)</div>
+      <div class="f">Precision = TP / (TP + FP)         ← "Of predicted +, how many are actually +?"</div>
+      <div class="f">Recall    = TP / (TP + FN)         ← "Of actual +, how many did we catch?"</div>
+      <div class="f">F1-Score  = 2 × (P × R) / (P + R) ← Harmonic mean of Precision and Recall</div>
+      <div class="f">Specificity = TN / (TN + FP)      ← True Negative Rate</div>
+      <div class="f">FPR = FP / (FP + TN)              ← False Positive Rate (x-axis of ROC)</div>
+      <div class="n">Type I Error = FP (False Positive). Type II Error = FN (False Negative). In medical diagnosis, FN (missed cancer) is more dangerous than FP.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Why Precision/Recall Alone is Insufficient (2023 Part C Q2)</h3>
+    <p>This is a critical 15-mark question from 2023. The answer requires explaining the precision-recall tradeoff and then AUC-ROC.</p>
+    <p><strong>Problem with Accuracy alone:</strong> With class imbalance (99% negative, 1% positive), a model that always predicts "negative" achieves 99% accuracy but is useless (0% recall).</p>
+    <p><strong>Problem with Precision alone:</strong> A spam filter that only flags 1 email as spam (and it's correct) achieves 100% precision, but misses 99 actual spam emails (terrible recall).</p>
+    <p><strong>Problem with Recall alone:</strong> A spam filter that flags ALL emails as spam achieves 100% recall, but flags everything (terrible precision).</p>
+    <p><strong>Solution — Precision-Recall Tradeoff:</strong> Increasing the classification threshold increases precision but decreases recall (and vice versa). We need a single metric that balances both → <span class="hl">F1-Score</span> or AUC-ROC.</p>
+  </div>
+  <div class="theory">
+    <h3>AUC-ROC Curve — Full Explanation</h3>
+    <p><span class="hl">ROC (Receiver Operating Characteristic)</span> curve plots True Positive Rate (Recall) vs. False Positive Rate at various classification thresholds. <span class="hl">AUC (Area Under Curve)</span> is the area under this curve.</p>
+    <div class="diag">
+      <svg viewBox="0 0 400 280" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <!-- Axes -->
+        <line x1="60" y1="220" x2="360" y2="220" stroke="#4b6080" stroke-width="1.5"/>
+        <line x1="60" y1="220" x2="60" y2="30" stroke="#4b6080" stroke-width="1.5"/>
+        <!-- Diagonal (random classifier) -->
+        <line x1="60" y1="220" x2="360" y2="30" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="6,4"/>
+        <text x="250" y="145" fill="#f43f5e" font-family="IBM Plex Mono" font-size="9">Random (AUC=0.5)</text>
+        <!-- Perfect classifier -->
+        <polyline points="60,220 60,30 360,30" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6,4" fill="none"/>
+        <text x="75" y="55" fill="#10b981" font-family="IBM Plex Mono" font-size="9">Perfect (AUC=1.0)</text>
+        <!-- Good classifier ROC curve -->
+        <path d="M60,220 C100,180 140,100 200,70 C260,45 310,32 360,30" stroke="#a78bfa" stroke-width="2.5" fill="none"/>
+        <!-- AUC shading -->
+        <path d="M60,220 C100,180 140,100 200,70 C260,45 310,32 360,30 L360,220 Z" fill="rgba(167,139,250,0.12)"/>
+        <text x="200" y="160" text-anchor="middle" fill="#a78bfa" font-family="Syne" font-size="13" font-weight="700">AUC ≈ 0.85</text>
+        <!-- Axis labels -->
+        <text x="200" y="245" text-anchor="middle" fill="#7a93b8" font-family="IBM Plex Mono" font-size="10">False Positive Rate (FPR)</text>
+        <text x="18" y="130" fill="#7a93b8" font-family="IBM Plex Mono" font-size="10" transform="rotate(-90,18,130)">True Positive Rate (TPR)</text>
+        <!-- Axis ticks -->
+        <text x="55" y="224" text-anchor="end" fill="#4b6080" font-family="IBM Plex Mono" font-size="9">0</text>
+        <text x="355" y="224" text-anchor="end" fill="#4b6080" font-family="IBM Plex Mono" font-size="9">1</text>
+        <text x="55" y="32" text-anchor="end" fill="#4b6080" font-family="IBM Plex Mono" font-size="9">1</text>
+        <!-- Point markers on ROC curve -->
+        <circle cx="160" cy="85" r="4" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+        <text x="165" y="80" fill="#fbbf24" font-family="IBM Plex Mono" font-size="8">threshold ↑</text>
+      </svg>
+      <div class="diag-cap">Fig 5.2 — ROC Curve. Each point = one threshold setting. AUC = area under violet curve. Higher AUC = better classifier.</div>
+    </div>
+    <div class="fbox">
+      <span class="lbl">AUC-ROC Key Facts</span>
+      <div class="f">AUC = 1.0  → Perfect classifier (impossible in practice)</div>
+      <div class="f">AUC = 0.5  → Random classifier (diagonal line = chance)</div>
+      <div class="f">AUC &lt; 0.5 → Worse than random (reverse labels to fix)</div>
+      <div class="f">AUC ≥ 0.9  → Excellent. 0.8–0.9 = Good. 0.7–0.8 = Acceptable.</div>
+      <div class="n">AUC is threshold-independent — it measures classifier performance across ALL possible thresholds. This makes it ideal for comparing classifiers regardless of operating point.</div>
+    </div>
+    <h4>When to Use Which Metric</h4>
+    <table class="tbl">
+      <tr><th>Scenario</th><th>Best Metric</th><th>Why</th></tr>
+      <tr><td>Balanced classes</td><td>Accuracy, F1</td><td>Both classes equally important</td></tr>
+      <tr><td>Imbalanced classes</td><td>F1, AUC-ROC</td><td>Accuracy misleading with imbalance</td></tr>
+      <tr><td>Cost of FN high (cancer, fraud)</td><td>Recall</td><td>Must catch all actual positives</td></tr>
+      <tr><td>Cost of FP high (spam filter)</td><td>Precision</td><td>Must not flag negatives as positive</td></tr>
+      <tr><td>Comparing multiple classifiers</td><td>AUC-ROC</td><td>Threshold-independent comparison</td></tr>
+      <tr><td>Multi-class classification</td><td>Macro/Micro F1</td><td>Averages across all classes</td></tr>
+    </table>
+  </div>
+  <div class="theory">
+    <h3>MSE — Mean Squared Error (2025 Part A Q9)</h3>
+    <div class="fbox">
+      <span class="lbl">Regression Metrics</span>
+      <div class="f">MSE = (1/n) · Σᵢ (yᵢ − ŷᵢ)²    ← Penalizes large errors heavily</div>
+      <div class="f">RMSE = √MSE                       ← Same units as target variable</div>
+      <div class="f">MAE = (1/n) · Σᵢ |yᵢ − ŷᵢ|      ← Robust to outliers</div>
+      <div class="f">R² = 1 − (SS_res / SS_tot)       ← Proportion of variance explained (0–1)</div>
+      <div class="n">MSE tells you: "On average, how far off are your predictions?" MSE penalizes large errors more than MAE (due to squaring). A model with MSE=0 makes perfect predictions.</div>
+    </div>
+  </div>
+  <div class="pyq-sec">
+    <div class="pyq-head">📝 PYQs — Model Evaluation</div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Explain why precision or recall alone is not a sufficient measure to measure classifier performance in binary classification. Discuss AUC-ROC curve used in classification problems.</div>
+      <div class="pyq-meta">Aug 2023 · Part C Q2 · 15 marks</div>
+      <div class="pyq-topic">Topic: Precision/Recall, AUC-ROC · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Why Precision or Recall Alone is Insufficient:</strong><br><br>In binary classification, the performance of a classifier depends on the threshold used to convert probability scores into class labels. Changing this threshold creates a tradeoff between precision and recall:<br><br><strong>Precision alone is insufficient:</strong> A classifier can achieve 100% precision by predicting "positive" only for the one example it is most confident about. If that one prediction is correct, precision=1.0. But all other positives are missed (recall→0). This is useless in practice.<br><br><strong>Recall alone is insufficient:</strong> A classifier can achieve 100% recall by predicting "positive" for every example. All actual positives are caught, but so are all negatives — precision collapses to (# positives/total).<br><br><strong>The Precision-Recall Tradeoff:</strong><br>• Lower threshold → more predicted positive → higher Recall, lower Precision<br>• Higher threshold → fewer predicted positive → higher Precision, lower Recall<br>Neither extreme is acceptable. F1-Score = 2PR/(P+R) balances both, but it's a single-threshold measure.<br><br><strong>AUC-ROC Curve:</strong><br>The ROC (Receiver Operating Characteristic) curve plots TPR (=Recall) vs FPR at every possible classification threshold (0 to 1). Each point on the curve is one threshold setting.<br><br>TPR = TP/(TP+FN) = Recall (y-axis)<br>FPR = FP/(FP+TN) = 1−Specificity (x-axis)<br><br>AUC (Area Under Curve) = probability that the classifier ranks a random positive higher than a random negative.<br>• AUC = 1.0: Perfect. • AUC = 0.5: Random. • AUC > 0.5: Better than random.<br><br><strong>Advantages of AUC-ROC:</strong><br>1. Threshold-independent — measures performance across ALL operating points<br>2. Scale-invariant — not affected by class imbalance<br>3. Ideal for comparing multiple classifiers<br><br>[Draw the ROC diagram with labeled axes, diagonal random line, and a curved AUC region]</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Precision and recall are two essential quality measures. Explain why it is the usual practice to trade one measure for the other. Explain why the F-score is a good measure.</div>
+      <div class="pyq-meta">June 2022 · Part B Q4b · 8 marks</div>
+      <div class="pyq-topic">Topic: Precision-Recall Tradeoff, F1-Score · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Trading Precision for Recall (and vice versa):</strong><br>Both precision and recall depend on the classification threshold θ. When we change θ:<br>• Increase θ → fewer positive predictions → higher Precision, lower Recall<br>• Decrease θ → more positive predictions → lower Precision, higher Recall<br><br>This inherent tradeoff means we cannot simultaneously maximize both. The optimal tradeoff point depends on the application:<br>• Medical diagnosis (missed cancer deadly → minimize FN): prefer high Recall even at cost of Precision<br>• Spam filtering (important email lost → minimize FP): prefer high Precision even at cost of Recall<br><br><strong>Why F-Score is a Good Measure:</strong><br>F1-Score = 2 × (Precision × Recall) / (Precision + Recall)<br><br>F1 is the harmonic mean of Precision and Recall. Properties:<br>1. <strong>Penalizes imbalance:</strong> Unlike arithmetic mean, harmonic mean is pulled down by low values. If either P or R is near zero, F1 is near zero, even if the other is perfect. Example: P=1.0, R=0.01 → Arithmetic mean=0.505 (misleadingly high), Harmonic mean (F1)=0.02 (correctly low).<br>2. <strong>Single threshold metric:</strong> F1 gives one number at the operating threshold.<br>3. <strong>Handles imbalanced data better than accuracy.</strong><br>Generalized Fβ: Fβ = (1+β²)·PR / (β²·P + R). β>1 → weights Recall more. β<1 → weights Precision more.</div>
+    </div>
+    <div class="pyq-item">
+      <div class="pyq-q">Q. Write short notes on: (b) Evaluating machine learning algorithms and model selection</div>
+      <div class="pyq-meta">2024 · Part C Q4b · 5 marks</div>
+      <div class="pyq-topic">Topic: ML Algorithm Evaluation + Model Selection · Unit 4</div>
+      <button class="ptog" onclick="tog(this)">▼ Show Answer</button>
+      <div class="ans"><strong>Evaluating ML Algorithms:</strong><br><br>After training, we must estimate how well the model will perform on unseen data. Key methods:<br><br>1. <strong>Hold-out Validation:</strong> Split data into 70% train / 30% test. Train on training set, evaluate on test set. Simple but high variance estimate.<br><br>2. <strong>k-Fold Cross Validation:</strong> Split data into k equal folds. Train on k−1 folds, test on remaining fold. Repeat k times. Average scores give more reliable estimate.<br>Standard: k=10 (10-fold CV). Less data waste than hold-out.<br><br>3. <strong>Leave-One-Out CV (LOOCV):</strong> k=n case. Each sample is test set once. Unbiased but expensive O(n²).<br><br>4. <strong>Bootstrap:</strong> Sample n examples WITH replacement. Train on bootstrap sample, test on out-of-bag samples.<br><br><strong>Model Selection:</strong><br>Model selection = choosing the best algorithm AND hyperparameters for a given problem.<br><br>Steps:<br>1. Define search space: which algorithms and hyperparameters to try<br>2. Use cross-validation to estimate performance of each configuration<br>3. Select configuration with best validation score<br>4. Retrain on all training data with selected configuration<br>5. Report final performance on held-out test set (used ONCE at the very end)<br><br>Techniques: Grid Search (exhaustive), Random Search (random sampling), Bayesian Optimization.<br><br>Warning: Never use test set for model selection — it causes optimistic bias (overfitting to test set).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MODEL SELECTION ═══ -->
+<section class="section" id="model-selection">
+  <div class="sec-head">
+    <span class="sec-num">06</span>
+    <h2 class="sec-title">Model Selection &amp; Cross Validation</h2>
+    <span class="ipill hb hb-a">70% · Theory</span>
+  </div>
+  <div class="theory">
+    <h3>Cross Validation — Core Concept</h3>
+    <p><span class="hl">Cross Validation (CV)</span> is a resampling technique to estimate model performance on unseen data using only the training set. It gives a less biased estimate than a single train/test split.</p>
+    <div class="fbox">
+      <span class="lbl">k-Fold Cross Validation</span>
+      <div class="f">1. Split dataset D into k equal folds: D = D₁ ∪ D₂ ∪ ... ∪ Dₖ</div>
+      <div class="f">2. For i = 1 to k:  Train on D \ Dᵢ,  Test on Dᵢ  → get score sᵢ</div>
+      <div class="f">3. CV score = (1/k) · Σᵢ sᵢ  (average over k folds)</div>
+      <div class="n">Standard choice: k=10. Stratified k-fold: maintains class proportions in each fold (important for imbalanced data).</div>
+    </div>
+    <div class="diag">
+      <svg viewBox="0 0 500 120" width="100%" xmlns="http://www.w3.org/2000/svg">
+        <text x="10" y="18" fill="#7a93b8" font-family="IBM Plex Mono" font-size="10">5-Fold Cross Validation</text>
+        <!-- Fold rows -->
+        <text x="8" y="42" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Fold 1:</text>
+        <rect x="55" y="28" width="70" height="18" rx="3" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" stroke-width="1"/>
+        <text x="90" y="40" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="8">TEST</text>
+        <rect x="130" y="28" width="280" height="18" rx="3" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1"/>
+        <text x="270" y="40" text-anchor="middle" fill="#10b981" font-family="IBM Plex Mono" font-size="8">TRAIN</text>
+        <text x="8" y="62" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Fold 2:</text>
+        <rect x="55" y="48" width="70" height="18" rx="3" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1"/>
+        <rect x="130" y="48" width="70" height="18" rx="3" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" stroke-width="1"/>
+        <text x="165" y="60" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="8">TEST</text>
+        <rect x="205" y="48" width="205" height="18" rx="3" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1"/>
+        <text x="8" y="82" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">Fold 3:</text>
+        <rect x="55" y="68" width="145" height="18" rx="3" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1"/>
+        <rect x="205" y="68" width="70" height="18" rx="3" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" stroke-width="1"/>
+        <text x="240" y="80" text-anchor="middle" fill="#f43f5e" font-family="IBM Plex Mono" font-size="8">TEST</text>
+        <rect x="280" y="68" width="130" height="18" rx="3" fill="rgba(16,185,129,0.2)" stroke="#10b981" stroke-width="1"/>
+        <text x="430" y="60" fill="#a78bfa" font-family="IBM Plex Mono" font-size="9">→ avg score</text>
+        <text x="55" y="112" fill="#7a93b8" font-family="IBM Plex Mono" font-size="9">... (folds 4 and 5 continue the same pattern) ...</text>
+      </svg>
+      <div class="diag-cap">Fig 6.1 — 5-Fold Cross Validation. Each fold takes a turn as the test set. Final score = average of 5 test scores.</div>
+    </div>
+  </div>
+  <div class="theory">
+    <h3>Regularization — Preventing Overfitting</h3>
+    <p><span class="hl">Regularization</span> adds a penalty term to the loss function to discourage model complexity, preventing overfitting.</p>
+    <table class="tbl">
+      <tr><th>Method</th><th>Penalty</th><th>Effect</th><th>Use Case</th></tr>
+      <tr><td><strong>L1 (LASSO)</strong></td><td>λ·Σ|βᵢ|</td><td>Zeros out irrelevant weights → feature selection</td><td>Sparse models; few relevant features</td></tr>
+      <tr><td><strong>L2 (Ridge)</strong></td><td>λ·Σβᵢ²</td><td>Shrinks all weights toward zero → smooth model</td><td>Many features with small effects</td></tr>
+      <tr><td><strong>Elastic Net</strong></td><td>L1 + L2</td><td>Combines sparsity + smoothness</td><td>Correlated features + sparsity needed</td></tr>
+      <tr><td><strong>Dropout (NN)</strong></td><td>N/A</td><td>Randomly zeros neurons during training</td><td>Deep neural networks</td></tr>
+    </table>
+    <div class="tip link"><div class="ti">🔗</div><div class="tb"><div class="ttl">Connection — Regularization connects Unit 4 to ALL Units</div><p>L2 regularization in SVM (Unit 2) is the C parameter controlling margin softness. L1/LASSO in Linear Regression (Unit 2) is embedded feature selection. Dropout in Neural Networks (Unit 6). Pruning in Decision Trees (Unit 2) is equivalent to structural regularization. Understanding regularization (Unit 4) gives you deeper understanding of WHY each algorithm's hyperparameters exist — great for Part C answers that show connections.</p></div></div>
+  </div>
+
+  <!-- MASTER PYQ TABLE -->
+  <section class="section" id="pyqs">
+    <div class="sec-head">
+      <span class="sec-num">✦</span>
+      <h2 class="sec-title">All Unit 4 PYQs — Master List</h2>
+    </div>
+    <div class="theory">
+      <h3>Part A (2 marks) — Unit 4 Questions Across All Papers</h3>
+      <table class="tbl">
+        <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+        <tr><td>2025</td><td>What is the significance of standard deviation in ML?</td><td>Statistics ⭐</td></tr>
+        <tr><td>2025</td><td>Differentiate overfitting and underfitting</td><td>Bias-Variance ⭐</td></tr>
+        <tr><td>2025</td><td>What is Confusion Matrix?</td><td>Evaluation ⭐⭐</td></tr>
+        <tr><td>2025</td><td>Differentiate feature extraction and selection</td><td>Feature Eng ⭐⭐</td></tr>
+        <tr><td>2025</td><td>Calculate variance and SD of {4,2,5,8,6}</td><td>Statistics ⭐</td></tr>
+        <tr><td>2025</td><td>What does MSE tell you?</td><td>Regression Eval ⭐</td></tr>
+        <tr><td>2024</td><td>Differentiate feature extraction and selection</td><td>Feature Eng ⭐⭐</td></tr>
+        <tr><td>2024</td><td>False Negative in confusion matrix?</td><td>Evaluation ⭐</td></tr>
+        <tr><td>2024</td><td>Attribute selection measure in classification?</td><td>Feature Selection ⭐</td></tr>
+        <tr><td>2023</td><td>What is PCA? When do you use it?</td><td>PCA ⭐⭐</td></tr>
+        <tr><td>2023</td><td>Define SVD + applications?</td><td>SVD ⭐⭐</td></tr>
+        <tr><td>2023</td><td>Overfitting and underfitting?</td><td>Bias-Variance ⭐</td></tr>
+        <tr><td>2022</td><td>Differentiate feature extraction and selection</td><td>Feature Eng ⭐⭐</td></tr>
+      </table>
+      <h3 style="margin-top:20px">Part B/C (4–15 marks) — Unit 4 Questions</h3>
+      <table class="tbl">
+        <tr><th>Year</th><th>Question</th><th>Topic</th></tr>
+        <tr><td>2025 C</td><td>PCA in ML + how to evaluate ML algorithms?</td><td>PCA + Eval ⭐⭐</td></tr>
+        <tr><td>2025 B</td><td>Feature selection concept in ML</td><td>Feature Selection ⭐</td></tr>
+        <tr><td>2025 B</td><td>Use of PCA + steps of PCA algorithm</td><td>PCA ⭐⭐</td></tr>
+        <tr><td>2024 C</td><td>Collaborative filtering + Evaluating ML + Model Selection</td><td>Eval + Model Sel ⭐</td></tr>
+        <tr><td>2024 B</td><td>Curse of dimensionality + dimensionality reduction</td><td>Dim Reduction ⭐⭐</td></tr>
+        <tr><td>2024 B</td><td>Use of PCA in ML + PCA steps</td><td>PCA ⭐⭐</td></tr>
+        <tr><td>2023 C</td><td>AUC-ROC + why precision/recall alone insufficient</td><td>Evaluation ⭐⭐⭐</td></tr>
+        <tr><td>2023 B</td><td>GMM motivation + K-means vs PCA relationship</td><td>PCA ⭐⭐</td></tr>
+        <tr><td>2023 B</td><td>Curse of dimensionality + dimensionality reduction</td><td>Dim Reduction ⭐</td></tr>
+        <tr><td>2022 C</td><td>PCA concept with suitable example</td><td>PCA ⭐⭐</td></tr>
+        <tr><td>2022 B</td><td>Precision/recall tradeoff + F-score justification</td><td>Evaluation ⭐⭐</td></tr>
+      </table>
+    </div>
+    <div class="tip trick"><div class="ti">🏆</div><div class="tb"><div class="ttl">Top 5 Must-Master for Unit 4 Exam</div><p>
+      <strong>1. PCA:</strong> All 6 steps + covariance matrix + eigenvalue/eigenvector + projection formula<br>
+      <strong>2. AUC-ROC:</strong> Draw curve + explain TPR vs FPR + AUC interpretation + when to use<br>
+      <strong>3. Confusion Matrix:</strong> TP/TN/FP/FN + all 5 formulas (Accuracy, Precision, Recall, F1, Specificity)<br>
+      <strong>4. Filter/Wrapper/Embedded:</strong> Definition + example + comparison table<br>
+      <strong>5. Standard Deviation:</strong> Formula + numerical calculation + significance in ML
+    </p></div></div>
+  </section>
+
+</main>
+</div>
+
+<button class="fab" id="fabBtn" onclick="openSB()">☰</button>
+
+<script>
+function tog(btn){
+  var ans=btn.nextElementSibling;
+  ans.classList.toggle('open');
+  btn.textContent=ans.classList.contains('open')?'▲ Hide Answer':'▼ Show Answer';
+}
+function openSB(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('vis');document.getElementById('fabBtn').textContent='✕'}
+function closeSB(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('vis');document.getElementById('fabBtn').textContent='☰'}
+const secs=document.querySelectorAll('.section'),navs=document.querySelectorAll('.navitem');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  secs.forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id});
+  navs.forEach(n=>{n.classList.remove('active');if(n.getAttribute('href')==='#'+cur)n.classList.add('active')});
+});
+</script>
+</body>
+</html>
