@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML RTU — Complete Study Guide | B.Tech VI Sem</title>
+<meta name="description" content="Complete RTU exam prep guide for Machine Learning (6E7102 / 6CS4-02). All units, PYQs 2022–2025, formulas, solved problems and tricks.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@300;400;500;600&family=Outfit:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:       #060910;
+  --bg2:      #0a0e1a;
+  --surface:  #111827;
+  --surface2: #18243a;
+  --border:   #1f2d45;
+  --border2:  #162035;
+  /* Unit accents */
+  --u1: #10b981; /* emerald  – intro */
+  --u2: #3b82f6; /* blue     – supervised */
+  --u3: #f59e0b; /* amber    – unsupervised */
+  --u4: #a78bfa; /* violet   – statistical */
+  --u5: #f43f5e; /* rose     – RL */
+  --u6: #22d3ee; /* cyan     – pyqs */
+  --gold: #fbbf24;
+  --text: #dde4f0;
+  --dim:  #4b6080;
+  --dim2: #7a93b8;
+  --mono: 'JetBrains Mono', monospace;
+  --head: 'Fraunces', serif;
+  --body: 'Outfit', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ══════════════════ TOP NAV ══════════════════ */
+.topnav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(6,9,16,0.93);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 24px;
+  display: flex; align-items: center; gap: 4px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.topnav::-webkit-scrollbar { display: none; }
+.topnav-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--u1); padding: 14px 14px 14px 0;
+  border-right: 1px solid var(--border); margin-right: 6px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.nav-chip {
+  font-family: var(--mono); font-size: 11px; padding: 7px 13px;
+  border-radius: 6px; text-decoration: none; color: var(--dim2);
+  white-space: nowrap; flex-shrink: 0; transition: all 0.18s;
+  border: 1px solid transparent;
+}
+.nav-chip:hover { color: var(--text); background: var(--surface2); }
+.nav-chip.active { color: var(--u1); background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); }
+.nav-chip.pyq {
+  color: var(--u6); background: rgba(34,211,238,0.06);
+  border-color: rgba(34,211,238,0.2);
+  margin-left: 4px;
+}
+.nav-chip.pyq:hover { background: rgba(34,211,238,0.12); }
+
+/* ══════════════════ HERO ══════════════════ */
+.hero {
+  position: relative; overflow: hidden;
+  padding: 72px 40px 64px;
+  background: var(--bg);
+}
+/* Neural-net dot-grid background */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(16,185,129,0.12) 1px, transparent 1px);
+  background-size: 36px 36px;
+  animation: dotDrift 25s linear infinite;
+}
+@keyframes dotDrift {
+  0%   { transform: translate(0,0); }
+  100% { transform: translate(36px, 36px); }
+}
+/* Radial glow */
+.hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 20%, rgba(16,185,129,0.09) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative; z-index: 1;
+  max-width: 900px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 18px;
+}
+
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--u1);
+  animation: fadeUp 0.5s ease both;
+}
+.hero-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--u1); box-shadow: 0 0 12px var(--u1);
+  animation: blink 2.5s ease-in-out infinite;
+}
+@keyframes blink {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:0.4; transform:scale(0.7); }
+}
+
+.hero-title {
+  font-family: var(--head); font-weight: 800;
+  font-size: clamp(40px, 7.5vw, 80px);
+  line-height: 0.95; letter-spacing: -1.5px; color: #fff;
+  animation: fadeUp 0.5s 0.08s ease both;
+}
+.hero-title .thin { font-weight: 300; font-style: italic; color: var(--dim2); }
+.hero-title .accent-word {
+  display: block;
+  background: linear-gradient(120deg, var(--u1) 0%, #059669 40%, var(--u2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-family: var(--body); font-size: 17px; color: var(--dim2);
+  max-width: 600px; line-height: 1.75;
+  animation: fadeUp 0.5s 0.16s ease both;
+}
+.hero-sub strong { color: var(--text); font-weight: 600; }
+
+.hero-meta {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+  animation: fadeUp 0.5s 0.24s ease both;
+}
+.hero-meta span { display: flex; align-items: center; gap: 7px; }
+.hero-meta span::before { content:'·'; color: var(--u1); font-size: 18px; line-height:0; }
+
+.hero-badges {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  animation: fadeUp 0.5s 0.32s ease both;
+}
+.hbadge {
+  font-family: var(--mono); font-size: 11px;
+  padding: 5px 13px; border-radius: 20px; border: 1px solid;
+  letter-spacing: 0.3px;
+}
+.hb-e { color: var(--u1); border-color: rgba(16,185,129,0.35); background: rgba(16,185,129,0.08); }
+.hb-b { color: var(--u2); border-color: rgba(59,130,246,0.35); background: rgba(59,130,246,0.08); }
+.hb-a { color: var(--u3); border-color: rgba(245,158,11,0.35); background: rgba(245,158,11,0.08); }
+.hb-r { color: var(--u5); border-color: rgba(244,63,94,0.35); background: rgba(244,63,94,0.08); }
+.hb-c { color: var(--u6); border-color: rgba(34,211,238,0.35); background: rgba(34,211,238,0.08); }
+
+/* ── Crafted-by strip inside hero ── */
+.crafted-by {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 6px;
+  animation: fadeUp 0.5s 0.4s ease both;
+}
+.crafted-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--dim); letter-spacing: 1.5px; text-transform: uppercase;
+}
+.crafted-name {
+  font-family: var(--head); font-size: 15px; font-weight: 700;
+  color: var(--text); font-style: italic;
+}
+.crafted-links { display: flex; gap: 6px; }
+.crafted-link {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 5px;
+  text-decoration: none; color: var(--dim2);
+  background: var(--surface); border: 1px solid var(--border);
+  transition: all 0.18s;
+}
+.crafted-link:hover { color: var(--u1); border-color: var(--u1); }
+.crafted-link svg { width: 12px; height: 12px; fill: currentColor; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════ STATS ══════════════════ */
+.stats-strip {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 30px 40px;
+}
+.stats-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 20px;
+}
+.stat-item { text-align: center; }
+.stat-num {
+  font-family: var(--mono); font-size: 30px; font-weight: 600;
+  color: var(--u1); line-height: 1; display: block; margin-bottom: 5px;
+}
+.stat-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--dim); letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* ══════════════════ IMPORTANCE BAR ══════════════════ */
+.importance-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 40px 0;
+}
+.section-header {
+  display: flex; align-items: baseline; gap: 14px;
+  margin-bottom: 28px;
+}
+.section-header h2 {
+  font-family: var(--head); font-size: clamp(20px,3vw,26px);
+  font-weight: 700; color: #fff;
+}
+.section-header .sub {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--dim); letter-spacing: 1px;
+}
+
+.imp-grid {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.imp-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 48px;
+  align-items: center; gap: 14px;
+}
+.imp-label {
+  font-family: var(--mono); font-size: 12px; color: var(--dim2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.imp-bar-wrap {
+  background: var(--surface2); border-radius: 3px; height: 8px; overflow: hidden;
+}
+.imp-bar {
+  height: 100%; border-radius: 3px;
+  background: var(--bar-color);
+  box-shadow: 0 0 8px var(--bar-color);
+  animation: barGrow 1.2s cubic-bezier(0.22,1,0.36,1) both;
+  animation-delay: var(--bar-delay, 0s);
+  transform-origin: left;
+}
+@keyframes barGrow {
+  from { width: 0 !important; }
+}
+.imp-pct {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--bar-color); text-align: right; font-weight: 600;
+}
+
+/* ══════════════════ UNIT CARDS ══════════════════ */
+.units-section {
+  padding: 64px 40px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+}
+.units-header {
+  text-align: center; max-width: 560px; margin: 0 auto 44px;
+}
+.units-header h2 {
+  font-family: var(--head); font-weight: 800;
+  font-size: clamp(22px, 3.5vw, 30px); color: #fff; margin-bottom: 8px;
+}
+.units-header p {
+  font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 1px;
+}
+.units-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  max-width: 1100px; margin: 0 auto;
+}
+
+.unit-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  text-decoration: none;
+  display: flex; flex-direction: column; gap: 10px;
+  overflow: hidden;
+  transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+}
+.unit-card::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: 14px;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, var(--card-accent) 0%, transparent 70%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.unit-card:hover { transform: translateY(-4px); border-color: var(--card-accent); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+.unit-card:hover::before { opacity: 0.1; }
+
+.unit-num {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--card-accent);
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  padding: 3px 10px; border-radius: 4px;
+  display: inline-block; width: fit-content;
+}
+.unit-card h3 {
+  font-family: var(--head); font-size: 17px; font-weight: 700;
+  color: #fff; line-height: 1.25;
+}
+.unit-topics {
+  font-family: var(--mono); font-size: 11px; color: var(--dim); line-height: 1.65;
+}
+.unit-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: auto; padding-top: 12px;
+  border-top: 1px solid var(--border2);
+}
+.unit-go {
+  font-family: var(--mono); font-size: 11px; color: var(--card-accent);
+  display: flex; align-items: center; gap: 5px; transition: gap 0.2s;
+}
+.unit-card:hover .unit-go { gap: 8px; }
+.unit-badge {
+  font-family: var(--mono); font-size: 10px; padding: 3px 8px;
+  border-radius: 3px; background: rgba(255,255,255,0.04); color: var(--dim2);
+}
+.active-badge {
+  font-family: var(--mono); font-size: 10px; padding: 2px 8px;
+  border-radius: 3px; color: var(--u1); background: rgba(16,185,129,0.12);
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+/* ══════════════════ PYQ SECTION ══════════════════ */
+.pyq-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 40px;
+}
+.pyq-header-row {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+}
+.pyq-header-row h2 {
+  font-family: var(--head); font-size: clamp(20px,3vw,26px);
+  font-weight: 700; color: #fff;
+}
+.pyq-view-all {
+  font-family: var(--mono); font-size: 11px; color: var(--u6);
+  text-decoration: none; display: flex; align-items: center; gap: 5px;
+  transition: gap 0.2s;
+}
+.pyq-view-all:hover { gap: 8px; }
+
+.pyq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.pyq-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-decoration: none;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.pyq-card.latest {
+  border-color: rgba(34,211,238,0.4);
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(34,211,238,0.04) 100%);
+}
+.pyq-card.latest::before {
+  content: 'LATEST';
+  position: absolute; top: 10px; right: 10px;
+  font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+  color: var(--u6); background: rgba(34,211,238,0.1);
+  border: 1px solid rgba(34,211,238,0.3);
+  padding: 2px 7px; border-radius: 3px;
+}
+.pyq-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+.pyq-year {
+  font-family: var(--head); font-size: 28px; font-weight: 800; color: #fff;
+  line-height: 1;
+}
+.pyq-code {
+  font-family: var(--mono); font-size: 11px; color: var(--dim2);
+}
+.pyq-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.pyq-tag {
+  font-family: var(--mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 3px;
+  background: var(--surface2); color: var(--dim2);
+}
+.pyq-go {
+  font-family: var(--mono); font-size: 11px; color: var(--u6);
+  margin-top: auto; display: flex; align-items: center; gap: 5px;
+}
+
+/* ══════════════════ UNIT 1 CONTENT ══════════════════ */
+.content-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 64px 40px;
+}
+.content-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 28px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.cs-num {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--u1); background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25);
+  padding: 4px 10px; border-radius: 5px;
+}
+.cs-title {
+  font-family: var(--head); font-size: clamp(18px,3vw,24px);
+  font-weight: 800; color: #fff;
+}
+.cs-pill {
+  margin-left: auto; font-family: var(--mono); font-size: 11px;
+  padding: 4px 12px; border-radius: 20px;
+}
+
+.theory {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px; margin-bottom: 18px;
+}
+.theory h3 {
+  font-family: var(--head); font-size: 17px; font-weight: 700;
+  color: var(--u1); margin-bottom: 12px;
+}
+.theory p { margin-bottom: 10px; font-size: 15px; }
+.theory p:last-child { margin-bottom: 0; }
+.theory ul, .theory ol { padding-left: 20px; margin: 10px 0; }
+.theory li { margin-bottom: 8px; font-size: 15px; }
+
+.formula {
+  background: #040710;
+  border: 1px solid rgba(16,185,129,0.25);
+  border-left: 3px solid var(--u1);
+  border-radius: 8px; padding: 16px 20px; margin: 14px 0;
+  font-family: var(--mono); font-size: 13px; color: #90e0bf;
+  overflow-x: auto;
+}
+.formula .lbl {
+  font-size: 10px; color: var(--dim); text-transform: uppercase;
+  letter-spacing: 2px; margin-bottom: 8px; display: block;
+}
+.formula .note { color: var(--dim2); font-size: 12px; margin-top: 8px; }
+
+.tip {
+  border-radius: 8px; padding: 14px 18px; margin: 12px 0;
+  display: flex; gap: 12px;
+}
+.tip.trick { background: rgba(251,191,36,0.07); border: 1px solid rgba(251,191,36,0.25); }
+.tip.note  { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.25); }
+.tip.link  { background: rgba(59,130,246,0.07); border: 1px solid rgba(59,130,246,0.25); }
+.tip.warn  { background: rgba(244,63,94,0.07);  border: 1px solid rgba(244,63,94,0.25);  }
+.tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.tip-body { flex: 1; }
+.tip-title {
+  font-family: var(--head); font-size: 13px; font-weight: 700;
+  margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;
+}
+.tip.trick .tip-title { color: var(--gold); }
+.tip.note  .tip-title { color: var(--u1); }
+.tip.link  .tip-title { color: var(--u2); }
+.tip.warn  .tip-title { color: var(--u5); }
+.tip-body p { font-size: 14px; color: var(--text); margin: 0; }
+
+.tbl { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; display: block; overflow-x: auto; }
+.tbl th { background: var(--surface2); padding: 10px 14px; text-align: left; font-family: var(--head); font-weight: 700; color: var(--u1); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tbl td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: var(--surface2); }
+
+.hl   { color: var(--u1); font-weight: 600; }
+.hl-b { color: var(--u2); font-weight: 600; }
+.hl-a { color: var(--u3); font-weight: 600; }
+.hl-v { color: var(--u4); font-weight: 600; }
+.hl-r { color: var(--u5); font-weight: 600; }
+h4 { font-family: var(--head); font-size: 15px; font-weight: 700; color: var(--text); margin: 16px 0 8px; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+/* Type-label tabs */
+.types-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 12px;
+  margin: 14px 0;
+}
+.type-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; border-top: 3px solid var(--card-color);
+}
+.type-card .type-name {
+  font-family: var(--head); font-size: 14px; font-weight: 700;
+  color: var(--card-color); margin-bottom: 6px;
+}
+.type-card p { font-size: 13px; color: var(--dim2); line-height: 1.5; margin: 0; }
+.type-card .type-ex {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--dim); margin-top: 8px;
+}
+
+/* PYQ solved block */
+.pyq-q {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--u6);
+  border-radius: 8px; padding: 14px 18px; margin: 12px 0;
+}
+.pyq-q .q-meta {
+  font-family: var(--mono); font-size: 10px; color: var(--u6);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.pyq-q .q-text {
+  font-family: var(--body); font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 10px;
+}
+.pyq-q .q-ans { font-size: 14px; color: var(--dim2); line-height: 1.65; }
+
+/* ══════════════════ FOOTER ══════════════════ */
+.site-footer {
+  background: var(--bg);
+  border-top: 1px solid var(--border2);
+}
+.footer-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 52px 40px 32px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--border2);
+}
+.footer-brand .brand-title {
+  font-family: var(--head); font-size: 20px; font-weight: 800;
+  color: #fff; font-style: italic; margin-bottom: 8px;
+}
+.footer-brand .brand-sub {
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+  line-height: 1.65; margin-bottom: 16px;
+}
+.footer-tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.ftag {
+  font-family: var(--mono); font-size: 10px; padding: 3px 8px;
+  border-radius: 3px; background: var(--surface); border: 1px solid var(--border);
+  color: var(--dim2);
+}
+.footer-links h4, .footer-dev h4 {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 16px;
+}
+.footer-links ul { list-style: none; }
+.footer-links li { margin-bottom: 10px; }
+.footer-links a {
+  font-family: var(--mono); font-size: 12px; color: var(--dim2);
+  text-decoration: none; display: flex; align-items: center; gap: 8px;
+  transition: color 0.18s;
+}
+.footer-links a::before { content:''; width:12px; height:1px; background:currentColor; opacity:0.4; flex-shrink:0; transition: width 0.18s; }
+.footer-links a:hover { color: var(--u1); }
+.footer-links a:hover::before { width:18px; opacity:1; }
+
+.dev-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--u1);
+  border-radius: 10px; padding: 18px;
+}
+.dev-name { font-family: var(--head); font-size: 18px; font-weight: 800; font-style: italic; color: #fff; margin-bottom: 2px; }
+.dev-role { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-bottom: 14px; }
+.dev-social { display: flex; gap: 8px; }
+.social-btn {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 11px;
+  padding: 6px 12px; border-radius: 6px;
+  text-decoration: none; color: var(--dim2);
+  background: var(--surface2); border: 1px solid var(--border);
+  transition: all 0.18s;
+}
+.social-btn:hover { color: var(--text); border-color: var(--u1); }
+.social-btn svg { width: 12px; height: 12px; fill: currentColor; }
+
+.footer-bottom {
+  padding: 20px 0 0;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+}
+.footer-copy { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+.footer-copy a { color: var(--dim2); text-decoration: none; }
+.footer-legal {
+  font-family: var(--mono); font-size: 11px; color: var(--dim);
+  display: flex; gap: 14px;
+}
+
+/* ══════════════════ RESPONSIVE ══════════════════ */
+@media (max-width: 768px) {
+  .hero { padding: 48px 20px 44px; }
+  .units-section, .content-section, .pyq-section, .importance-section { padding-left: 20px; padding-right: 20px; }
+  .stats-strip { padding: 24px 20px; }
+  .footer-inner { padding: 36px 20px 24px; }
+  .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  .imp-row { grid-template-columns: 130px 1fr 42px; }
+  .crafted-by { flex-wrap: wrap; }
+}
+@media (max-width: 480px) {
+  .hero-title { font-size: clamp(32px,10vw,48px); }
+  .units-grid, .pyq-grid { grid-template-columns: 1fr; }
+  .stats-inner { grid-template-columns: repeat(2,1fr); }
+  .imp-row { grid-template-columns: 110px 1fr 38px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAV ── -->
+<nav class="topnav">
+  <span class="topnav-label">ML · RTU</span>
+  <a class="nav-chip active" href="index.html">🏠 Home</a>
+  <a class="nav-chip" href="unit2.html">🎯 Unit 2: Supervised</a>
+  <a class="nav-chip" href="unit3.html">🔵 Unit 3: Unsupervised</a>
+  <a class="nav-chip" href="unit4.html">📐 Unit 4: Statistical</a>
+  <a class="nav-chip" href="unit5.html">🤖 Unit 5–6: RL</a>
+  <a class="nav-chip pyq" href="pyq.html">📋 Solved PYQs</a>
+</nav>
+
+<!-- ══════════════════════════════════ HERO ══════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-eyebrow">
+      <span class="hero-dot"></span>
+      B.Tech VI Semester · RTU Kota · 6E7102 / 6CS4-02 / 6AID4-02
+    </div>
+
+    <h1 class="hero-title">
+      <span class="thin">the art of</span><br>
+      <span class="accent-word">Machine Learning</span>
+    </h1>
+
+    <p class="hero-sub">
+      A <strong>complete exam-ready guide</strong> built from the ground up — every algorithm explained from first principles, with RTU-style theory, solved numericals, diagrams, exam tricks, and <strong>all PYQs 2022–2025 fully solved.</strong>
+    </p>
+
+    <div class="hero-meta">
+      <span>CS / IT / AID / CAI</span>
+      <span>5 Units Covered</span>
+      <span>70 Marks Paper</span>
+      <span>3 Hours</span>
+    </div>
+
+    <div class="hero-badges">
+      <span class="hbadge hb-e">✦ All PYQs Solved</span>
+      <span class="hbadge hb-b">⚡ Exam Tricks</span>
+      <span class="hbadge hb-a">📐 Formulas & Diagrams</span>
+      <span class="hbadge hb-r">🧠 Topic Connections</span>
+      <span class="hbadge hb-c">🔢 Numericals Step-by-Step</span>
+    </div>
+
+    <!-- Visible creator credit in hero -->
+    <div class="crafted-by">
+      <span class="crafted-label">crafted by</span>
+      <span class="crafted-name">Mahansh Gaur</span>
+      <div class="crafted-links">
+        <a class="crafted-link" href="https://github.com/mahanshstarktech" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          GitHub
+        </a>
+        <a class="crafted-link" href="https://www.instagram.com/mahaanshgaur_6513" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          Instagram
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════ STATS ══════════════════ -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item"><span class="stat-num">5</span><span class="stat-label">Units Covered</span></div>
+    <div class="stat-item"><span class="stat-num">4</span><span class="stat-label">Years PYQs</span></div>
+    <div class="stat-item"><span class="stat-num">40+</span><span class="stat-label">PYQ Solutions</span></div>
+    <div class="stat-item"><span class="stat-num">15+</span><span class="stat-label">Algorithms</span></div>
+    <div class="stat-item"><span class="stat-num">20+</span><span class="stat-label">Worked Examples</span></div>
+    <div class="stat-item"><span class="stat-num">70</span><span class="stat-label">Max Marks</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════ TOPIC IMPORTANCE ══════════════════ -->
+<div class="importance-section">
+  <div class="section-header">
+    <h2>Topic Importance — RTU Exam</h2>
+    <span class="sub">BASED ON 4-YEAR PYQ ANALYSIS</span>
+  </div>
+  <div class="imp-grid">
+    <div class="imp-row">
+      <span class="imp-label">Decision Tree / ID3</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:95%;--bar-color:#3b82f6;--bar-delay:0.1s"></div></div>
+      <span class="imp-pct" style="--bar-color:#3b82f6">95%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">K-Means Clustering</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:90%;--bar-color:#f59e0b;--bar-delay:0.15s"></div></div>
+      <span class="imp-pct" style="--bar-color:#f59e0b">90%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">MDP / Q-Learning / SARSA</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:90%;--bar-color:#f43f5e;--bar-delay:0.2s"></div></div>
+      <span class="imp-pct" style="--bar-color:#f43f5e">90%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">Apriori / FP-Growth</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:88%;--bar-color:#f59e0b;--bar-delay:0.25s"></div></div>
+      <span class="imp-pct" style="--bar-color:#f59e0b">88%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">Neural Net / Backprop</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:85%;--bar-color:#3b82f6;--bar-delay:0.3s"></div></div>
+      <span class="imp-pct" style="--bar-color:#3b82f6">85%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">SVM</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:80%;--bar-color:#3b82f6;--bar-delay:0.35s"></div></div>
+      <span class="imp-pct" style="--bar-color:#3b82f6">80%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">PCA / SVD</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:78%;--bar-color:#a78bfa;--bar-delay:0.4s"></div></div>
+      <span class="imp-pct" style="--bar-color:#a78bfa">78%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">Naive Bayes</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:75%;--bar-color:#3b82f6;--bar-delay:0.45s"></div></div>
+      <span class="imp-pct" style="--bar-color:#3b82f6">75%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">Linear Regression</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:70%;--bar-color:#3b82f6;--bar-delay:0.5s"></div></div>
+      <span class="imp-pct" style="--bar-color:#3b82f6">70%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">Hierarchical Clustering</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:68%;--bar-color:#f59e0b;--bar-delay:0.55s"></div></div>
+      <span class="imp-pct" style="--bar-color:#f59e0b">68%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">KNN</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:65%;--bar-color:#3b82f6;--bar-delay:0.6s"></div></div>
+      <span class="imp-pct" style="--bar-color:#3b82f6">65%</span>
+    </div>
+    <div class="imp-row">
+      <span class="imp-label">Recommender Systems</span>
+      <div class="imp-bar-wrap"><div class="imp-bar" style="width:60%;--bar-color:#a78bfa;--bar-delay:0.65s"></div></div>
+      <span class="imp-pct" style="--bar-color:#a78bfa">60%</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ UNIT CARDS ══════════════════ -->
+<section class="units-section">
+  <div class="units-header">
+    <h2>All Units at a Glance</h2>
+    <p>CLICK ANY UNIT TO OPEN THE FULL STUDY GUIDE</p>
+  </div>
+
+  <div class="units-grid">
+
+    <a class="unit-card" href="index.html" style="--card-accent:var(--u1)">
+      <span class="unit-num">Unit 01 · You are here</span>
+      <h3>Introduction to Machine Learning</h3>
+      <p class="unit-topics">Objectives · Scope · Outcomes · Types of Learning · Applications · ML vs AI · Key Terminology</p>
+      <div class="unit-footer">
+        <span class="unit-go">Open guide →</span>
+        <span class="active-badge">★ Active</span>
+      </div>
+    </a>
+
+    <a class="unit-card" href="unit2.html" style="--card-accent:var(--u2)">
+      <span class="unit-num">Unit 02</span>
+      <h3>Supervised Learning Algorithms</h3>
+      <p class="unit-topics">Linear Regression · Naive Bayes · Decision Tree (ID3/Gini) · KNN · Logistic Regression · SVM · Random Forest</p>
+      <div class="unit-footer">
+        <span class="unit-go" style="color:var(--u2)">Open guide →</span>
+        <span class="unit-badge">🔥 Highest Weight</span>
+      </div>
+    </a>
+
+    <a class="unit-card" href="unit3.html" style="--card-accent:var(--u3)">
+      <span class="unit-num">Unit 03</span>
+      <h3>Unsupervised Learning Algorithms</h3>
+      <p class="unit-topics">K-Means · Hierarchical Clustering · Probabilistic Clustering · Apriori Algorithm · FP-Growth · Gaussian Mixture Model</p>
+      <div class="unit-footer">
+        <span class="unit-go" style="color:var(--u3)">Open guide →</span>
+        <span class="unit-badge">🔢 Numericals</span>
+      </div>
+    </a>
+
+    <a class="unit-card" href="unit4.html" style="--card-accent:var(--u4)">
+      <span class="unit-num">Unit 04</span>
+      <h3>Statistical Learning &amp; Feature Engineering</h3>
+      <p class="unit-topics">PCA · SVD · Feature Ranking · Filter / Wrapper / Embedded Methods · Model Evaluation · AUC-ROC · Cross Validation</p>
+      <div class="unit-footer">
+        <span class="unit-go" style="color:var(--u4)">Open guide →</span>
+        <span class="unit-badge">⭐ PCA High Priority</span>
+      </div>
+    </a>
+
+    <a class="unit-card" href="unit5.html" style="--card-accent:var(--u5)">
+      <span class="unit-num">Unit 05 – 06</span>
+      <h3>Reinforcement Learning</h3>
+      <p class="unit-topics">Semi-supervised · MDP · Bellman Equations · Monte Carlo · Policy Iteration · Value Iteration · Q-Learning · SARSA · Model-based RL</p>
+      <div class="unit-footer">
+        <span class="unit-go" style="color:var(--u5)">Open guide →</span>
+        <span class="unit-badge">🔥 High PYQ Weight</span>
+      </div>
+    </a>
+
+    <a class="unit-card" href="pyq.html" style="--card-accent:var(--u6)">
+      <span class="unit-num">Solved PYQs</span>
+      <h3>Previous Year Questions — All Solved</h3>
+      <p class="unit-topics">May 2025 · 2024 · Aug 2023 · Jun 2022 · Step-by-step solutions · Topic tags · Marks breakdown</p>
+      <div class="unit-footer">
+        <span class="unit-go" style="color:var(--u6)">Open PYQs →</span>
+        <span class="unit-badge">📋 4 Papers</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ══════════════════ PYQ QUICK-PICK ══════════════════ -->
+<div class="pyq-section">
+  <div class="pyq-header-row">
+    <h2>Solved Previous Year Papers</h2>
+    <a class="pyq-view-all" href="pyq.html">View all solutions →</a>
+  </div>
+  <div class="pyq-grid">
+    <a class="pyq-card latest" href="pyq.html#2025">
+      <div class="pyq-year">2025</div>
+      <div class="pyq-code">6E7102 · May 2025 · AID</div>
+      <div class="pyq-tags">
+        <span class="pyq-tag">Standard Deviation</span>
+        <span class="pyq-tag">KNN</span>
+        <span class="pyq-tag">PCA</span>
+        <span class="pyq-tag">Linear Regression</span>
+        <span class="pyq-tag">SARSA</span>
+      </div>
+      <div class="pyq-go">Open solved paper →</div>
+    </a>
+    <a class="pyq-card" href="pyq.html#2024">
+      <div class="pyq-year">2024</div>
+      <div class="pyq-code">6E7102 · 2024 · CS,IT,AID,CAI</div>
+      <div class="pyq-tags">
+        <span class="pyq-tag">SVM</span>
+        <span class="pyq-tag">K-Means</span>
+        <span class="pyq-tag">FP-Growth</span>
+        <span class="pyq-tag">Neural Net</span>
+        <span class="pyq-tag">MDP</span>
+      </div>
+      <div class="pyq-go">Open solved paper →</div>
+    </a>
+    <a class="pyq-card" href="pyq.html#2023">
+      <div class="pyq-year">2023</div>
+      <div class="pyq-code">610402 · Aug 2023 · CSE &amp; IT</div>
+      <div class="pyq-tags">
+        <span class="pyq-tag">Decision Tree</span>
+        <span class="pyq-tag">Apriori</span>
+        <span class="pyq-tag">Perceptron</span>
+        <span class="pyq-tag">AUC-ROC</span>
+        <span class="pyq-tag">Q-Learning</span>
+      </div>
+      <div class="pyq-go">Open solved paper →</div>
+    </a>
+    <a class="pyq-card" href="pyq.html#2022">
+      <div class="pyq-year">2022</div>
+      <div class="pyq-code">6E1552 · Jun 2022 · IT</div>
+      <div class="pyq-tags">
+        <span class="pyq-tag">PCA</span>
+        <span class="pyq-tag">SVM</span>
+        <span class="pyq-tag">Association Rules</span>
+        <span class="pyq-tag">Backprop</span>
+        <span class="pyq-tag">SARSA</span>
+      </div>
+      <div class="pyq-go">Open solved paper →</div>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════════════ UNIT 1 CONTENT ══════════════════ -->
+<div class="content-section">
+
+  <!-- Section 01: Objectives -->
+  <div class="content-header">
+    <span class="cs-num">01</span>
+    <h2 class="cs-title">Course Objectives</h2>
+    <span class="cs-pill hbadge hb-e">Foundation · Conceptual</span>
+  </div>
+
+  <div class="theory">
+    <h3>What This Course Aims to Teach</h3>
+    <p>Machine Learning (6E7102 / 6CS4-02 / 6AID4-02) is a core sixth-semester paper for CS, IT, AID, and CAI branches under RTU Kota. It teaches algorithms that allow computers to learn patterns from data without being explicitly programmed for every rule.</p>
+    <p><strong>By the end of this course, you will:</strong></p>
+    <ol>
+      <li>Understand and implement <span class="hl">supervised learning algorithms</span> — regression, classification trees, SVM, and more (Unit 2).</li>
+      <li>Apply <span class="hl-a">unsupervised methods</span> to discover hidden structure in unlabelled data using clustering and association rules (Unit 3).</li>
+      <li>Use <span class="hl-v">statistical tools</span> — PCA, SVD, feature selection — to reduce dimensionality and evaluate models rigorously (Unit 4).</li>
+      <li>Formulate <span class="hl-r">reinforcement learning</span> problems using MDPs and solve them with Q-learning, SARSA, and policy iteration (Unit 5–6).</li>
+      <li>Choose the right algorithm for a given real-world problem and justify the choice using evaluation metrics.</li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Section 02: What is ML -->
+  <div class="content-header">
+    <span class="cs-num">02</span>
+    <h2 class="cs-title">What is Machine Learning?</h2>
+    <span class="cs-pill hbadge hb-b">Core Definition · RTU Favourite</span>
+  </div>
+
+  <div class="theory">
+    <h3>The Classic Definition — Write This Verbatim in Exams</h3>
+    <p>Arthur Samuel (1959) — the man who coined the term — defined Machine Learning as: <em>"the field of study that gives computers the ability to learn without being explicitly programmed."</em></p>
+    <p>Tom Mitchell (1997) gave a more formal definition:</p>
+    <div class="formula">
+      <span class="lbl">Mitchell's Formal Definition of ML</span>
+      A computer program is said to <strong>learn</strong> from experience E with respect to<br>
+      some class of tasks T and performance measure P, if its performance<br>
+      at tasks in T, as measured by P, improves with experience E.
+      <div class="note">Example: Spam filter. T = classify email as spam/not-spam. E = labelled emails. P = accuracy. The model improves as it sees more labelled examples.</div>
+    </div>
+    <p><strong>How ML differs from traditional programming:</strong></p>
+    <table class="tbl">
+      <tr><th>Traditional Programming</th><th>Machine Learning</th></tr>
+      <tr><td>Rules + Data → Output</td><td>Data + Output → Rules (model)</td></tr>
+      <tr><td>Human encodes all logic explicitly</td><td>Computer discovers logic from examples</td></tr>
+      <tr><td>Brittle — breaks when rules change</td><td>Adapts as new data arrives</td></tr>
+      <tr><td>Example: if temperature &gt; 37°C → fever</td><td>Example: learns fever pattern from 10,000 patient records</td></tr>
+    </table>
+  </div>
+
+  <div class="tip trick">
+    <div class="tip-icon">⚡</div>
+    <div class="tip-body">
+      <div class="tip-title">Exam Trick — ML vs AI Distinction</div>
+      <p>RTU often asks: <em>"Is ML just another name for AI? Comment."</em> (2022 paper, Q1). The answer: No. AI is the broad field of making machines intelligent. ML is a <strong>subset of AI</strong> that specifically uses data-driven learning. All ML is AI, but not all AI is ML (rule-based expert systems are AI but not ML). Draw a Venn diagram: AI ⊃ ML ⊃ Deep Learning. This earns full 2 marks.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Section 03: Types of Learning -->
+  <div class="content-header">
+    <span class="cs-num">03</span>
+    <h2 class="cs-title">Types of Machine Learning</h2>
+    <span class="cs-pill hbadge hb-e">Core Framework · Maps to All Units</span>
+  </div>
+
+  <div class="theory">
+    <h3>The Four Learning Paradigms</h3>
+    <p>Every ML algorithm falls into one (or more) of these four categories. Understanding these gives you a mental map of the entire course:</p>
+
+    <div class="types-grid">
+      <div class="type-card" style="--card-color:var(--u2)">
+        <div class="type-name">Supervised Learning</div>
+        <p>Learn a mapping from inputs X to outputs Y using <strong>labelled training data</strong> (X, Y pairs). You know the correct answer for each training example.</p>
+        <div class="type-ex">→ Unit 2 · Regression, Classification</div>
+      </div>
+      <div class="type-card" style="--card-color:var(--u3)">
+        <div class="type-name">Unsupervised Learning</div>
+        <p>Find hidden structure in <strong>unlabelled data</strong>. No correct answers given — the algorithm discovers groups or patterns on its own.</p>
+        <div class="type-ex">→ Unit 3 · Clustering, Association Rules</div>
+      </div>
+      <div class="type-card" style="--card-color:var(--u4)">
+        <div class="type-name">Semi-supervised Learning</div>
+        <p>A mix — small amount of <strong>labelled</strong> data + large amount of <strong>unlabelled</strong> data. Labels are expensive; semi-supervised exploits unlabelled data.</p>
+        <div class="type-ex">→ Unit 5 · Text Classification, Medical Imaging</div>
+      </div>
+      <div class="type-card" style="--card-color:var(--u5)">
+        <div class="type-name">Reinforcement Learning</div>
+        <p>An <strong>agent</strong> learns to act in an <strong>environment</strong> by trial and error — receiving rewards for good actions and penalties for bad ones. No labelled dataset.</p>
+        <div class="type-ex">→ Unit 5–6 · MDP, Q-Learning, SARSA</div>
+      </div>
+    </div>
+
+    <h4>Supervised Sub-types — Classification vs Regression</h4>
+    <table class="tbl">
+      <tr><th>Type</th><th>Output</th><th>Example</th><th>Algorithms</th></tr>
+      <tr><td><span class="hl-b">Classification</span></td><td>Discrete category</td><td>Spam / Not-Spam; Disease: Yes/No</td><td>Decision Tree, Naive Bayes, KNN, SVM, Logistic Regression, Random Forest</td></tr>
+      <tr><td><span class="hl-b">Regression</span></td><td>Continuous value</td><td>House price prediction; Sales forecast</td><td>Linear Regression, Ridge, Lasso, SVR</td></tr>
+    </table>
+  </div>
+
+  <div class="formula">
+    <span class="lbl">Key Difference — Classification vs Regression (2023, 2022 PYQ)</span>
+    Classification: f: X → {C₁, C₂, …, Cₖ}   Output is a class label (discrete)<br>
+    Regression:     f: X → ℝ                   Output is a real number (continuous)<br>
+    <div class="note">Similarity: Both are supervised — both need labelled training data. The loss function differs: Classification uses cross-entropy; Regression uses MSE.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Section 04: Key Terminology -->
+  <div class="content-header">
+    <span class="cs-num">04</span>
+    <h2 class="cs-title">Key ML Terminology</h2>
+    <span class="cs-pill hbadge hb-a">Vocabulary · Part A Ready</span>
+  </div>
+
+  <div class="theory">
+    <h3>Terms You Must Know for Part A (2-mark answers)</h3>
+    <table class="tbl">
+      <tr><th>Term</th><th>Definition (≤ 25 words)</th></tr>
+      <tr><td><span class="hl">Feature (Attribute)</span></td><td>An individual measurable property or input variable used to describe a data point. E.g., age, salary.</td></tr>
+      <tr><td><span class="hl">Label (Target)</span></td><td>The output variable the model is trying to predict. Known in training, unknown in production.</td></tr>
+      <tr><td><span class="hl">Training Data</span></td><td>The labelled dataset used to fit the model parameters during learning.</td></tr>
+      <tr><td><span class="hl-r">Overfitting</span></td><td>Model learns training data too well — memorises noise. High training accuracy, low test accuracy.</td></tr>
+      <tr><td><span class="hl-a">Underfitting</span></td><td>Model is too simple to capture the pattern. Low accuracy on both training and test data.</td></tr>
+      <tr><td><span class="hl-b">Bias</span></td><td>Error from wrong assumptions — model is too rigid. High bias = underfitting.</td></tr>
+      <tr><td><span class="hl-b">Variance</span></td><td>Error from sensitivity to small training data fluctuations. High variance = overfitting.</td></tr>
+      <tr><td><span class="hl-v">Cross-validation</span></td><td>Technique to estimate generalisation by training/testing on different data splits (e.g., k-fold).</td></tr>
+      <tr><td><span class="hl">Confusion Matrix</span></td><td>Table showing TP, TN, FP, FN counts for a classifier. Derives precision, recall, F1-score.</td></tr>
+      <tr><td><span class="hl-a">False Negative (FN)</span></td><td>Positive case predicted as negative. E.g., cancer patient classified as healthy. Type II error.</td></tr>
+    </table>
+
+    <div class="formula">
+      <span class="lbl">Confusion Matrix — Must Memorise for Every Paper</span>
+      Precision = TP / (TP + FP)    ← "Of all predicted positive, how many actually are?"<br>
+      Recall    = TP / (TP + FN)    ← "Of all actual positive, how many did we catch?"<br>
+      F1-Score  = 2 × (P × R) / (P + R)   ← Harmonic mean — balances both<br>
+      Accuracy  = (TP + TN) / Total
+      <div class="note">False Negative is more dangerous in medical diagnosis (missed cancer). False Positive is more dangerous in spam (important email deleted).</div>
+    </div>
+  </div>
+
+  <div class="tip note">
+    <div class="tip-icon">✅</div>
+    <div class="tip-body">
+      <div class="tip-title">Overfitting vs Underfitting — Draw This in Every Exam</div>
+      <p>Draw three curves: training error and test error vs. model complexity. Underfitting = both errors high (left). Good fit = both errors low (middle). Overfitting = training error low, test error high (right). The gap between training and test error IS the variance. This diagram earns you 3 marks minimum in any related question.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Section 05: Applications -->
+  <div class="content-header">
+    <span class="cs-num">05</span>
+    <h2 class="cs-title">Applications of Machine Learning</h2>
+    <span class="cs-pill hbadge hb-b">Scope · Real World</span>
+  </div>
+
+  <div class="theory">
+    <h3>Application Domains (Write 5 for any 2-mark scope question)</h3>
+    <table class="tbl">
+      <tr><th>Domain</th><th>Application</th><th>ML Type Used</th><th>Algorithm (Unit)</th></tr>
+      <tr><td><span class="hl-b">Healthcare</span></td><td>Disease diagnosis (diabetes, cancer), drug discovery</td><td>Supervised</td><td>Decision Tree, SVM (U2)</td></tr>
+      <tr><td><span class="hl-a">Finance</span></td><td>Credit scoring, fraud detection, stock prediction</td><td>Supervised</td><td>Random Forest, Logistic Regression (U2)</td></tr>
+      <tr><td><span class="hl-v">E-commerce</span></td><td>Product recommendations, customer segmentation</td><td>Unsupervised + Supervised</td><td>Collaborative Filtering, K-Means (U3)</td></tr>
+      <tr><td><span class="hl">NLP</span></td><td>Spam filtering, sentiment analysis, chatbots</td><td>Supervised</td><td>Naive Bayes (U2)</td></tr>
+      <tr><td><span class="hl-r">Robotics / Games</span></td><td>Self-driving cars, game-playing agents (AlphaGo)</td><td>Reinforcement</td><td>Q-Learning, MDP (U5–6)</td></tr>
+      <tr><td><span class="hl-b">Computer Vision</span></td><td>Face recognition, object detection, medical imaging</td><td>Supervised (Deep)</td><td>Neural Networks (U2)</td></tr>
+      <tr><td><span class="hl-a">Bioinformatics</span></td><td>Protein folding, gene expression clustering</td><td>Unsupervised</td><td>Hierarchical Clustering (U3)</td></tr>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Section 06: Exam Paper Structure -->
+  <div class="content-header">
+    <span class="cs-num">06</span>
+    <h2 class="cs-title">Exam Strategy — How to Score 60+</h2>
+    <span class="cs-pill hbadge hb-r">Strategy · RTU Format</span>
+  </div>
+
+  <div class="theory">
+    <h3>Paper Structure (70 Marks, 3 Hours)</h3>
+    <table class="tbl">
+      <tr><th>Part</th><th>Questions</th><th>Marks</th><th>Total</th><th>Time Allocation</th></tr>
+      <tr><td><strong>Part A</strong></td><td>10 compulsory short</td><td>2 each</td><td>20</td><td>~25 min · max 25 words each</td></tr>
+      <tr><td><strong>Part B</strong></td><td>Attempt 5 of 7</td><td>4 each</td><td>20</td><td>~50 min · diagram/formula mandatory</td></tr>
+      <tr><td><strong>Part C</strong></td><td>Attempt 3 of 5</td><td>10 each</td><td>30</td><td>~60 min · full-page structured answers</td></tr>
+    </table>
+
+    <h4>10-Mark Answer Template (Part C)</h4>
+    <ol>
+      <li><strong>Definition/Introduction</strong> — 2–3 lines. Use Mitchell's definition if ML-general.</li>
+      <li><strong>Key Formula / Mathematical Model</strong> — Box it. Examiner scans for this first.</li>
+      <li><strong>Algorithm Steps</strong> — Numbered list. "Step 1: Initialise… Step 2: Compute…"</li>
+      <li><strong>Labelled Block Diagram</strong> — Draw it large. Worth 3–4 marks alone.</li>
+      <li><strong>Worked Example</strong> — Small numerical demonstrates full understanding.</li>
+      <li><strong>Advantages / Disadvantages / Applications</strong> — 2 points each fills remaining space.</li>
+    </ol>
+  </div>
+
+  <div class="tip trick">
+    <div class="tip-icon">⚡</div>
+    <div class="tip-body">
+      <div class="tip-title">The Diagram Rule — Never Skip It</div>
+      <p>RTU ML examiners explicitly award marks for diagrams (the instruction sheet says "schematic diagrams must be shown wherever necessary"). For <strong>Decision Tree</strong>: draw the tree structure with if/else branches. For <strong>Neural Network</strong>: draw nodes, layers, arrows, activation function. For <strong>K-Means</strong>: draw centroid movement iterations. For <strong>MDP</strong>: draw the state-action-reward-state diagram. A well-drawn labelled diagram can earn you 3–4 marks even when your written text is thin.</p>
+    </div>
+  </div>
+
+  <div class="tip link">
+    <div class="tip-icon">🔗</div>
+    <div class="tip-body">
+      <div class="tip-title">Unit Connection Map — Mention These for Extra Marks</div>
+      <p><strong>U2 → U3:</strong> Decision tree splits use entropy/Gini — same probability concepts as clustering. <strong>U2 → U4:</strong> Feature selection (U4) directly improves supervised classifiers (U2). <strong>U3 → U4:</strong> K-means and PCA both reduce data complexity — one clusters, one transforms. <strong>U2 → U5:</strong> Naive Bayes' probabilistic model connects to Bayesian inference in RL. <strong>U4 → U2:</strong> Overfitting / model selection concepts apply to all supervised models. Mention any relevant connection in Part C to show depth.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Section 07: RTU PYQs for Unit 1 topics -->
+  <div class="content-header">
+    <span class="cs-num">07</span>
+    <h2 class="cs-title">Solved PYQs — Unit 1 Topics</h2>
+    <span class="cs-pill hbadge hb-c">Part A · 2 Marks Each</span>
+  </div>
+
+  <div class="pyq-q">
+    <div class="q-meta">
+      <span>📋 2022 PAPER · PART A Q1</span>
+      <span>Topic: ML vs AI · Unit 1</span>
+      <span>2 Marks</span>
+    </div>
+    <div class="q-text">"Is Machine Learning just another name for Artificial Intelligence?" Comment.</div>
+    <div class="q-ans">
+      <strong>No.</strong> AI is the broad discipline of creating intelligent machines. ML is a <em>subset</em> of AI that specifically focuses on algorithms which learn patterns from data without explicit programming. All ML systems are AI, but not all AI systems use ML — rule-based expert systems (e.g., chess engines before deep learning) are AI but not ML. The hierarchy is: AI ⊃ ML ⊃ Deep Learning.
+    </div>
+  </div>
+
+  <div class="pyq-q">
+    <div class="q-meta">
+      <span>📋 2023 PAPER · PART A Q1</span>
+      <span>Topic: Classification vs Regression · Unit 1</span>
+      <span>2 Marks</span>
+    </div>
+    <div class="q-text">What is the difference between classification and regression?</div>
+    <div class="q-ans">
+      <strong>Classification:</strong> Predicts a discrete class label. Output ∈ {C₁, C₂, …, Cₖ}. E.g., email → spam/not-spam. Uses algorithms: Decision Tree, Naive Bayes, SVM.<br><br>
+      <strong>Regression:</strong> Predicts a continuous numerical value. Output ∈ ℝ. E.g., predicting house price in rupees. Uses: Linear Regression, SVR.<br><br>
+      <strong>Similarity:</strong> Both are supervised — both require labelled training data. Both build a model f(X) from examples.
+    </div>
+  </div>
+
+  <div class="pyq-q">
+    <div class="q-meta">
+      <span>📋 2023 PAPER · PART A Q3</span>
+      <span>Topic: Overfitting & Underfitting · Unit 1</span>
+      <span>2 Marks</span>
+    </div>
+    <div class="q-text">Explain overfitting and underfitting.</div>
+    <div class="q-ans">
+      <strong>Overfitting:</strong> The model learns the training data too well — including its noise and random fluctuations — and fails to generalise to new data. High training accuracy, low test accuracy. Caused by: too complex model, too little data. Solution: regularisation, more data, pruning (for decision trees).<br><br>
+      <strong>Underfitting:</strong> The model is too simple to capture the true patterns. Both training and test accuracy are low. Caused by: too few features, too simple a model. Solution: add features, use a more complex algorithm.<br><br>
+      <strong>Bias-Variance Tradeoff:</strong> Overfitting = High Variance. Underfitting = High Bias. Ideal model minimises both.
+    </div>
+  </div>
+
+  <div class="pyq-q">
+    <div class="q-meta">
+      <span>📋 2025 PAPER · PART A Q3</span>
+      <span>Topic: Confusion Matrix · Unit 1</span>
+      <span>2 Marks</span>
+    </div>
+    <div class="q-text">What is Confusion Matrix?</div>
+    <div class="q-ans">
+      A <strong>Confusion Matrix</strong> is an N×N table (N = number of classes) that summarises classifier performance by showing the counts of correct and incorrect predictions for each class.<br><br>
+      For binary classification (2×2 matrix):<br>
+      &nbsp;&nbsp;• TP (True Positive): predicted positive, actually positive ✓<br>
+      &nbsp;&nbsp;• TN (True Negative): predicted negative, actually negative ✓<br>
+      &nbsp;&nbsp;• FP (False Positive): predicted positive, actually negative ✗ — Type I error<br>
+      &nbsp;&nbsp;• FN (False Negative): predicted negative, actually positive ✗ — Type II error<br><br>
+      Derived metrics: Accuracy = (TP+TN)/Total, Precision = TP/(TP+FP), Recall = TP/(TP+FN), F1 = 2PR/(P+R).
+    </div>
+  </div>
+
+  <div class="pyq-q">
+    <div class="q-meta">
+      <span>📋 2024 PAPER · PART A Q5</span>
+      <span>Topic: False Negative · Unit 1</span>
+      <span>2 Marks</span>
+    </div>
+    <div class="q-text">What do you understand by false negative in confusion matrix?</div>
+    <div class="q-ans">
+      <strong>False Negative (FN)</strong> — also called a <em>Type II Error</em> — occurs when the model predicts the <em>negative</em> class but the actual label is <em>positive</em>.<br><br>
+      Example: A patient has cancer (positive), but the classifier predicts "no cancer" (negative). This is a False Negative — a missed detection — which is medically dangerous.<br><br>
+      FN is captured by Recall: Recall = TP/(TP+FN). High FN → Low Recall. In critical applications (medical, fraud), we want to minimise FN even at the cost of more FP.
+    </div>
+  </div>
+
+</div><!-- /content-section -->
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+        <div class="brand-title">ML RTU Study Guide</div>
+        <div class="brand-sub">
+          A comprehensive, free exam preparation resource for Machine Learning
+          (6E7102 / 6CS4-02 / 6AID4-02) under Rajasthan Technical University, Kota.
+          Covers all units with algorithm derivations, PYQ solutions, and diagrams.
+        </div>
+        <div class="footer-tag-row">
+          <span class="ftag">B.Tech VI Sem</span>
+          <span class="ftag">RTU Kota</span>
+          <span class="ftag">CS / IT / AID / CAI</span>
+          <span class="ftag">2022–2025 PYQs</span>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="index.html">🏠 Home &amp; Unit 1 — Intro</a></li>
+          <li><a href="unit2.html">🎯 Unit 2 — Supervised Learning</a></li>
+          <li><a href="unit3.html">🔵 Unit 3 — Unsupervised Learning</a></li>
+          <li><a href="unit4.html">📐 Unit 4 — Statistical Learning</a></li>
+          <li><a href="unit5.html">🤖 Unit 5–6 — Reinforcement Learning</a></li>
+          <li><a href="pyq.html">📋 Solved PYQs — All Years</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-dev">
+        <h4>Created by</h4>
+        <div class="dev-card">
+          <div class="dev-name">Mahansh Gaur</div>
+          <div class="dev-role">Developed &amp; Maintained · B.Tech RTU Kota</div>
+          <div class="dev-social">
+            <a class="social-btn" href="https://github.com/mahanshstarktech" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+              GitHub
+            </a>
+            <a class="social-btn" href="https://www.instagram.com/mahaanshgaur_6513" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              Instagram
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Mahansh Gaur · ML RTU Study Guide · Educational use only.</div>
+      <div class="footer-legal">
+        <span>All Rights Reserved</span>
+        <span>Free for RTU Exam Prep</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
